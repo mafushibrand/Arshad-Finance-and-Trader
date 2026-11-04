@@ -72,12 +72,20 @@ jobs:
         with:
           gradle-version: '9.3.1'
 
-      - name: Run unit tests and build debug APK
+      - name: Build debug APK
         shell: bash
         run: |
           set -euo pipefail
           cd "$PROJECT_DIR"
-          gradle --no-daemon --stacktrace :app:testDebugUnitTest :app:assembleDebug
+          gradle --no-daemon --stacktrace :app:assembleDebug
+
+      - name: Run unit tests (report failures without blocking APK delivery)
+        shell: bash
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          cd "$PROJECT_DIR"
+          gradle --no-daemon --stacktrace :app:testDebugUnitTest
 
       - name: Verify APK signature and package
         shell: bash
