@@ -12,59 +12,89 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Extract uploaded source archive
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p source
           unzip -q 'ArshadFinance-4.6.0-category-demo-source(1).zip' -d source
-          PROJECT_DIR="$(find source -type f \( -name settings.gradle -o -name settings.gradle.kts \) -printf '%h\n' | head -n 1)"
-          if [ -z "$PROJECT_DIR" ]; then
-            echo 'Could not locate Gradle settings file in source ZIP.'
-            find source -maxdepth 4 -type f | head -n 150
-            exit 1
-          fi
+          PROJECT_DIR="$(find source -type f -name settings.gradle.kts -printf '%h\n' | head -n 1)"
+          test -n "$PROJECT_DIR"
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
           echo "Project root: $PROJECT_DIR"
-          echo "---- Android/Gradle configuration ----"
-          find "$PROJECT_DIR" -type f \( -name 'build.gradle' -o -name 'build.gradle.kts' -o -name 'gradle.properties' \) -print
-          grep -RInE 'compileSdk|targetSdk|com.android.tools.build:gradle|com.android.application|distributionUrl' "$PROJECT_DIR" --include='*.gradle' --include='*.gradle.kts' --include='gradle-wrapper.properties' --include='libs.versions.toml' || true
-      - name: Set up Java
+          grep -RInE 'compileSdk|targetSdk|distributionUrl' "$PROJECT_DIR" --include='*.gradle.kts' --include='gradle-wrapper.properties' --include='libs.versions.toml' || true
+
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - name: Set up Android SDK
+
+      - name: Set up Android SDK command-line tools
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
         shell: bash
         run: |
           set -euo pipefail
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager -print -quit 2>/dev/null || true)"
+          SDKMANAGER="$(command -v sdkmanager || true)"
           if [ -z "$SDKMANAGER" ]; then
-            echo "Android SDK command-line tools (sdkmanager) were not found."
-            find "$ANDROID_HOME" -maxdepth 4 -type f -name sdkmanager -print || true
+            SDKMANAGER="$(find "$ANDROID_HOME" -type f -name sdkmanager -print -quit 2>/dev/null || true)"
+          fi
+          if [ -z "$SDKMANAGER" ]; then
+            echo "sdkmanager missing after Android SDK setup"
+            find "$ANDROID_HOME" -maxdepth 5 -type f | head -n 100
             exit 1
           fi
           yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
-      - name: Set up Gradle
+          "$SDKMANAGER" "platform-tools" "platforms;android-36.1" "build-tools;36.0.0"
+
+      - name: Set up Gradle 9.3.1
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.7'
-      - name: Build debug APK
+          gradle-version: '9.3.1'
+
+      - name: Run unit tests and build debug APK
         shell: bash
         run: |
           set -euo pipefail
           cd "$PROJECT_DIR"
-          chmod +x ./gradlew
-          ./gradlew assembleDebug --stacktrace
-      - name: Upload APK artifact
+          gradle --no-daemon --stacktrace :app:testDebugUnitTest :app:assembleDebug
+
+      - name: Verify APK signature and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="$(find "$PROJECT_DIR/app/build/outputs/apk/debug" -maxdepth 1 -name '*.apk' -print -quit)"
+          test -n "$APK"
+          mkdir -p "$PROJECT_DIR/dist"
+          cp "$APK" "$PROJECT_DIR/dist/ArshadFinance-4.6.0-debug.apk"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.6.0-debug.apk" > "$PROJECT_DIR/dist/signature-check.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.6.0-debug.apk" > "$PROJECT_DIR/dist/package-info.txt"
+          sha256sum "$PROJECT_DIR/dist/ArshadFinance-4.6.0-debug.apk" > "$PROJECT_DIR/dist/SHA256SUMS.txt"
+          cat "$PROJECT_DIR/dist/signature-check.txt"
+          head -n 3 "$PROJECT_DIR/dist/package-info.txt"
+
+      - name: Upload verified APK
         uses: actions/upload-artifact@v4
         with:
-          name: ArshadFinance-debug-apk
-          path: source/**/build/outputs/apk/debug/*.apk
+          name: ArshadFinance-4.6.0-verified-debug-APK
+          path: ${{ env.PROJECT_DIR }}/dist/
           if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArshadFinance-test-reports
+          path: |
+            ${{ env.PROJECT_DIR }}/app/build/reports/tests/
+            ${{ env.PROJECT_DIR }}/app/build/test-results/
+          if-no-files-found: ignore
           retention-days: 14
