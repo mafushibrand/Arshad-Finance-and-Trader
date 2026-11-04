@@ -42,7 +42,7 @@ jobs:
             tint: Color = Mint, click: () -> Unit = {}, controls: @Composable RowScope.() -> Unit = {},
             leadingEmoji: String = "") {"""
           new = """internal fun ListTile(title: String, subtitle: String, icon: ImageVector, trailing: String = "",
-            tint: Color = Mint, leadingEmoji: String = "", click: () -> Unit = {},
+            tint: Color = Mint, click: () -> Unit = {}, leadingEmoji: String = "",
             controls: @Composable RowScope.() -> Unit = {}) {"""
           if old not in source:
               if new in source:
