@@ -29,15 +29,21 @@ jobs:
           fi
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
           echo "Project root: $PROJECT_DIR"
-          echo "---- Project files (first 250) ----"
-          find "$PROJECT_DIR" -maxdepth 5 -type f | sort | head -n 250
+          echo "---- Android/Gradle configuration ----"
+          find "$PROJECT_DIR" -type f \( -name 'build.gradle' -o -name 'build.gradle.kts' -o -name 'gradle.properties' \) -print
+          grep -RInE 'compileSdk|targetSdk|com.android.tools.build:gradle|com.android.application|distributionUrl' "$PROJECT_DIR" --include='*.gradle' --include='*.gradle.kts' --include='gradle-wrapper.properties' --include='libs.versions.toml' || true
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "platforms;android-35" "platforms;android-36" "build-tools;35.0.0" "build-tools;36.0.0"
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
