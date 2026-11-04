@@ -29,6 +29,31 @@ jobs:
           echo "Project root: $PROJECT_DIR"
           grep -RInE 'compileSdk|targetSdk|distributionUrl' "$PROJECT_DIR" --include='*.gradle.kts' --include='gradle-wrapper.properties' --include='libs.versions.toml' || true
 
+      - name: Fix Compose ListTile trailing-lambda parameter order
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$PROJECT_DIR/app/src/main/java/com/example/ui/screens/PremiumInventoryScreen.kt" <<'PY'
+          from pathlib import Path
+          import sys
+          path = Path(sys.argv[1])
+          source = path.read_text()
+          old = """internal fun ListTile(title: String, subtitle: String, icon: ImageVector, trailing: String = "",
+            tint: Color = Mint, click: () -> Unit = {}, controls: @Composable RowScope.() -> Unit = {},
+            leadingEmoji: String = "") {"""
+          new = """internal fun ListTile(title: String, subtitle: String, icon: ImageVector, trailing: String = "",
+            tint: Color = Mint, leadingEmoji: String = "", click: () -> Unit = {},
+            controls: @Composable RowScope.() -> Unit = {}) {"""
+          if old not in source:
+              if new in source:
+                  print("ListTile signature already fixed")
+              else:
+                  raise SystemExit("Expected ListTile signature not found; refusing unsafe patch")
+          else:
+              path.write_text(source.replace(old, new, 1))
+              print("Fixed ListTile parameter order")
+          PY
+
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
