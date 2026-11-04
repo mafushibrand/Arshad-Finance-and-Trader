@@ -2,6 +2,9 @@ name: Build Arshad Finance APK
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -21,11 +24,13 @@ jobs:
           PROJECT_DIR="$(find source -type f \( -name settings.gradle -o -name settings.gradle.kts \) -printf '%h\n' | head -n 1)"
           if [ -z "$PROJECT_DIR" ]; then
             echo 'Could not locate Gradle settings file in source ZIP.'
-            find source -maxdepth 3 -type f | head -n 100
+            find source -maxdepth 4 -type f | head -n 150
             exit 1
           fi
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
           echo "Project root: $PROJECT_DIR"
+          echo "---- Project files (first 250) ----"
+          find "$PROJECT_DIR" -maxdepth 5 -type f | sort | head -n 250
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
