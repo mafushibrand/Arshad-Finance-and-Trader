@@ -54,6 +54,29 @@ jobs:
               print("Fixed ListTile parameter order")
           PY
 
+      - name: Give standalone APK a separate package identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$PROJECT_DIR/app/build.gradle.kts" <<'PY'
+          from pathlib import Path
+          import sys
+          p = Path(sys.argv[1])
+          s = p.read_text()
+          replacements = {
+              'applicationId = "com.aistudio.arshadfinance.v2stock"': 'applicationId = "com.aistudio.arshadfinance.v2stock.standalone"',
+              'versionCode = 45': 'versionCode = 46',
+              'versionName = "4.6.0-plans"': 'versionName = "4.6.0-standalone"',
+              'manifestPlaceholders["appLabel"] = "@string/app_name"': 'manifestPlaceholders["appLabel"] = "Arshad Finance Standalone"',
+          }
+          for before, after in replacements.items():
+              if before not in s:
+                  raise SystemExit(f"Expected build setting not found: {before}")
+              s = s.replace(before, after, 1)
+          p.write_text(s)
+          print("Standalone package, version and launcher label configured")
+          PY
+
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
@@ -94,7 +117,7 @@ jobs:
           APK="$(find "$PROJECT_DIR/app/build/outputs/apk/debug" -maxdepth 1 -name '*.apk' -print -quit)"
           test -n "$APK"
           mkdir -p "$PROJECT_DIR/dist"
-          cp "$APK" "$PROJECT_DIR/dist/ArshadFinance-4.6.0-debug.apk"
+          cp "$APK" "$PROJECT_DIR/dist/ArshadFinance-4.6.0-Standalone.apk"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.6.0-debug.apk" > "$PROJECT_DIR/dist/signature-check.txt"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.6.0-debug.apk" > "$PROJECT_DIR/dist/package-info.txt"
           sha256sum "$PROJECT_DIR/dist/ArshadFinance-4.6.0-debug.apk" > "$PROJECT_DIR/dist/SHA256SUMS.txt"
@@ -104,7 +127,7 @@ jobs:
       - name: Upload verified APK
         uses: actions/upload-artifact@v4
         with:
-          name: ArshadFinance-4.6.0-verified-debug-APK
+          name: ArshadFinance-4.6.0-Standalone-APK
           path: ${{ env.PROJECT_DIR }}/dist/
           if-no-files-found: error
           retention-days: 30
