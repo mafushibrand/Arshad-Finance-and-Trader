@@ -35,6 +35,12 @@ jobs:
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/scripts/apply-functional-fixes.py" "$PROJECT_DIR"
 
+      - name: Allow service items in held POS carts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/scripts/apply-service-draft-fix.py" "$PROJECT_DIR"
+
       - name: Fix POS checkout language parameter
         shell: bash
         run: |
