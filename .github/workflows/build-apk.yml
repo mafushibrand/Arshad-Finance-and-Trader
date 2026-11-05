@@ -41,6 +41,12 @@ jobs:
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/scripts/fix-pos-checkout-language-param.py" "$PROJECT_DIR"
 
+      - name: Apply Urdu and English dashboard and receipt labels
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/scripts/apply-language-fixes.py" "$PROJECT_DIR"
+
       - name: Fix Compose ListTile trailing-lambda parameter order
         shell: bash
         run: |
