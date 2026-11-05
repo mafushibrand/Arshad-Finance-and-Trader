@@ -54,7 +54,7 @@ for old,new in [
     once(old,new)
 once('text = "Inv No: ' + d + '{invoice.invoiceNumber}",',
      'text = "' + d + '{t("Invoice No", "بل نمبر")}: ' + d + '{invoice.invoiceNumber}",')
-once('text = "Date: ' + d + '{dateFormatted}",',
+once('text = "Date: ' + d + 'dateFormatted",',
      'text = "' + d + '{t("Date", "تاریخ")}: ' + d + '{dateFormatted}",')
 once('text = "Customer: ' + d + '{invoice.customerName}' + d + '{custContact}",',
      'text = "' + d + '{t("Customer", "گاہک")}: ' + d + '{invoice.customerName}' + d + '{custContact}",')
