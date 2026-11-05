@@ -58,11 +58,11 @@ once('text = "Date: ' + d + 'dateFormatted",',
      'text = "' + d + '{t("Date", "تاریخ")}: ' + d + '{dateFormatted}",')
 once('text = "Customer: ' + d + '{invoice.customerName}' + d + 'custContact",',
      'text = "' + d + '{t("Customer", "گاہک")}: ' + d + '{invoice.customerName}' + d + '{custContact}",')
-old = 'val statusStr = if (isPaid) "Full Paid (' + d + '{invoice.paymentMethod})" else "Udhar: ' + d + '{currencySymbol} ' + d + '{"%,.0f".format(invoice.remainingBalance)}"\n            ThermalRow("Status:", statusStr)'
-new = 'val statusStr = if (isPaid) t("Fully paid", "مکمل وصول") + " (' + d + '{paymentMethodLabel})" else t("Due", "بقایا") + ": ' + d + '{currencySymbol} ' + d + '{"%,.0f".format(invoice.remainingBalance)}"\n            ThermalRow(t("Status:", "حیثیت:"), statusStr)'
+old = 'val statusStr = if (isPaid) "Full Paid (' + d + '{invoice.paymentMethod})" else "Udhar: ' + d + 'currencySymbol ' + d + '{"%,.0f".format(invoice.remainingBalance)}"\n            ThermalRow("Status:", statusStr)'
+new = 'val statusStr = if (isPaid) t("Fully paid", "مکمل وصول") + " (' + d + '{paymentMethodLabel})" else t("Due", "بقایا") + ": ' + d + 'currencySymbol ' + d + '{"%,.0f".format(invoice.remainingBalance)}"\n            ThermalRow(t("Status:", "حیثیت:"), statusStr)'
 once(old,new)
-old = 'text = "🏛️ FBR POS Tax: ' + d + '{currencySymbol} ' + d + '{"%,.0f".format(invoice.taxAmount)}",'
-new = 'text = "🏛️ " + t("FBR POS Tax", "ایف بی آر ٹیکس") + ": ' + d + '{currencySymbol} ' + d + '{"%,.0f".format(invoice.taxAmount)}",'
+old = 'text = "🏛️ FBR POS Tax: ' + d + 'currencySymbol ' + d + '{"%,.0f".format(invoice.taxAmount)}",'
+new = 'text = "🏛️ " + t("FBR POS Tax", "ایف بی آر ٹیکس") + ": ' + d + 'currencySymbol ' + d + '{"%,.0f".format(invoice.taxAmount)}",'
 once(old,new)
 old = 'text = "Powered by ' + d + '{businessProfile.businessName}",'
 new = 'text = t("Powered by", "بذریعہ") + " ' + d + '{businessProfile.businessName}",'
