@@ -118,9 +118,9 @@ jobs:
           test -n "$APK"
           mkdir -p "$PROJECT_DIR/dist"
           cp "$APK" "$PROJECT_DIR/dist/ArshadFinance-4.6.0-Standalone.apk"
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.6.0-debug.apk" > "$PROJECT_DIR/dist/signature-check.txt"
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.6.0-debug.apk" > "$PROJECT_DIR/dist/package-info.txt"
-          sha256sum "$PROJECT_DIR/dist/ArshadFinance-4.6.0-debug.apk" > "$PROJECT_DIR/dist/SHA256SUMS.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.6.0-Standalone.apk" > "$PROJECT_DIR/dist/signature-check.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.6.0-Standalone.apk" > "$PROJECT_DIR/dist/package-info.txt"
+          sha256sum "$PROJECT_DIR/dist/ArshadFinance-4.6.0-Standalone.apk" > "$PROJECT_DIR/dist/SHA256SUMS.txt"
           cat "$PROJECT_DIR/dist/signature-check.txt"
           head -n 3 "$PROJECT_DIR/dist/package-info.txt"
 
