@@ -29,6 +29,12 @@ jobs:
           echo "Project root: $PROJECT_DIR"
           grep -RInE 'compileSdk|targetSdk|distributionUrl' "$PROJECT_DIR" --include='*.gradle.kts' --include='gradle-wrapper.properties' --include='libs.versions.toml' || true
 
+      - name: Apply stock safety and unified POS catalogue fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/scripts/apply-functional-fixes.py" "$PROJECT_DIR"
+
       - name: Fix Compose ListTile trailing-lambda parameter order
         shell: bash
         run: |
