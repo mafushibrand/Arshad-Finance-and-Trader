@@ -56,7 +56,7 @@ once('text = "Inv No: ' + d + '{invoice.invoiceNumber}",',
      'text = "' + d + '{t("Invoice No", "بل نمبر")}: ' + d + '{invoice.invoiceNumber}",')
 once('text = "Date: ' + d + 'dateFormatted",',
      'text = "' + d + '{t("Date", "تاریخ")}: ' + d + '{dateFormatted}",')
-once('text = "Customer: ' + d + '{invoice.customerName}' + d + '{custContact}",',
+once('text = "Customer: ' + d + '{invoice.customerName}' + d + 'custContact",',
      'text = "' + d + '{t("Customer", "گاہک")}: ' + d + '{invoice.customerName}' + d + '{custContact}",')
 old = 'val statusStr = if (isPaid) "Full Paid (' + d + '{invoice.paymentMethod})" else "Udhar: ' + d + '{currencySymbol} ' + d + '{"%,.0f".format(invoice.remainingBalance)}"\n            ThermalRow("Status:", statusStr)'
 new = 'val statusStr = if (isPaid) t("Fully paid", "مکمل وصول") + " (' + d + '{paymentMethodLabel})" else t("Due", "بقایا") + ": ' + d + '{currencySymbol} ' + d + '{"%,.0f".format(invoice.remainingBalance)}"\n            ThermalRow(t("Status:", "حیثیت:"), statusStr)'
