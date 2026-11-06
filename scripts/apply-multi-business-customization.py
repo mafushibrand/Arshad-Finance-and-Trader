@@ -193,7 +193,7 @@ import coil.compose.AsyncImage
 
 edit("app/src/main/java/com/example/ui/components/HeaderBar.kt", [
 ('import androidx.compose.ui.text.style.TextOverflow\n','import androidx.compose.ui.text.style.TextOverflow\nimport androidx.compose.ui.layout.ContentScale\nimport coil.compose.AsyncImage\n',"header image imports"),
-('  businessName: String = "Arshad Finance"\n','  businessName: String = "Arshad Finance",\n  businessLogoUri: String = ""\n',"header logo parameter"),
+('  showSubscriptionAccess: Boolean = false\n','  showSubscriptionAccess: Boolean = false,\n  businessLogoUri: String = ""\n',"header logo parameter"),
 ('''        Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.primaryContainer) {
           Icon(Icons.Default.Storefront, null, tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(12.dp).size(24.dp))
@@ -208,7 +208,7 @@ edit("app/src/main/java/com/example/ui/components/HeaderBar.kt", [
 ])
 
 edit("app/src/main/java/com/example/MainActivity.kt", [
-('            businessName = uiState.businessProfile.businessName\n','            businessName = uiState.businessProfile.businessName,\n            businessLogoUri = uiState.businessProfile.logoImageUri\n',"pass logo URI to header")
+('            showSubscriptionAccess = uiState.selectedTab == FinanceTab.HOME\n','            showSubscriptionAccess = uiState.selectedTab == FinanceTab.HOME,\n            businessLogoUri = uiState.businessProfile.logoImageUri\n',"pass logo URI to header")
 ])
 
 print("Multi-business product/service image upload, persistent branding, and editable business banners applied.")
