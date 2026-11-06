@@ -68,7 +68,7 @@ test.write_text(t, encoding="utf-8")
 gradle = root / "app/build.gradle.kts"
 g = gradle.read_text(encoding="utf-8")
 needle = "  testImplementation(libs.robolectric)\n"
-dep = "  // Real org.json implementation for JVM tests; Android's mock JSONObject.put throws.\\n  testImplementation(\\\"org.json:json:20240303\\\")\\n"
+dep = "  // Real org.json implementation for JVM tests; Android's mock JSONObject.put throws.\n  testImplementation(\"org.json:json:20240303\")\n"
 if "testImplementation(\"org.json:json:20240303\")" not in g:
     if needle not in g:
         raise SystemExit("Robolectric dependency anchor not found; no unsafe edit made")
