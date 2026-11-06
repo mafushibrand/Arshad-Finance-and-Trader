@@ -59,6 +59,125 @@ jobs:
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/scripts/apply-language-fixes.py" "$PROJECT_DIR"
 
+
+      - name: Localize recent activity and correct stale version labels
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$PROJECT_DIR" <<'PY'
+          from pathlib import Path
+          import sys
+          root = Path(sys.argv[1])
+
+          def patch(rel, pairs):
+              p = root / rel
+              s = p.read_text(encoding="utf-8")
+              for old, new in pairs:
+                  if old not in s:
+                      if new in s:
+                          continue
+                      raise SystemExit(f"Expected UI fragment missing in {rel}: {old[:80]}")
+                  s = s.replace(old, new, 1)
+              p.write_text(s, encoding="utf-8")
+
+          card = root / "app/src/main/java/com/example/ui/components/TransactionItemCard.kt"
+          s = card.read_text(encoding="utf-8")
+          if "isUrdu: Boolean = false" not in s:
+              s = s.replace("  modifier: Modifier = Modifier\n) {\n  val isIncome",
+                            "  modifier: Modifier = Modifier,\n  isUrdu: Boolean = false\n) {\n  val isIncome", 1)
+          s = s.replace("  val formattedTime = formatTransactionDate(transaction.dateMillis)\n",
+                        "  val formattedTime = formatTransactionDate(transaction.dateMillis, isUrdu)\n"
+                        "  val displayTitle = localizedTransactionTitle(transaction.title, isUrdu)\n"
+                        "  val displayAccount = localizedPaymentLabel(transaction.accountName, isUrdu)\n"
+                        "  val displayMethod = localizedPaymentLabel(transaction.paymentMethod, isUrdu)\n", 1)
+          s = s.replace("text = transaction.title,", "text = displayTitle,", 1)
+          s = s.replace('text = "$formattedTime • ${transaction.accountName}",',
+                        'text = formattedTime + " • " + displayAccount,', 1)
+          s = s.replace("text = transaction.paymentMethod,", "text = displayMethod,", 1)
+          s = s.replace('text = "📸 Proof",',
+                        'text = if (isUrdu) "📸 ثبوت" else "📸 Proof",', 1)
+          helper_start = s.find("private fun formatTransactionDate(")
+          if helper_start >= 0 and "private fun localizedTransactionTitle(" not in s:
+              s = s[:helper_start] + """private fun localizedTransactionTitle(value: String, isUrdu: Boolean): String {
+                if (!isUrdu) return value
+                val mappings = listOf(
+                  "Customer Bill:" to "کسٹمر بل:",
+                  "Stock Purchase:" to "اسٹاک کی خریداری:",
+                  "Opening balance receipt:" to "ابتدائی بیلنس کی وصولی:",
+                  "Khata collection" to "کھاتے کی وصولی",
+                  "Expense:" to "اخراجات:",
+                  "Income:" to "آمدن:"
+                )
+                val match = mappings.firstOrNull { value.startsWith(it.first, ignoreCase = true) }
+                return if (match != null) match.second + value.removePrefix(match.first) else value
+              }
+
+              private fun localizedPaymentLabel(value: String, isUrdu: Boolean): String {
+                if (!isUrdu) return value
+                return when (value.trim().lowercase(Locale.ROOT)) {
+                  "cash" -> "نقد"
+                  "bank" -> "بینک"
+                  "jazzcash" -> "جاز کیش"
+                  "easypaisa" -> "ایزی پیسہ"
+                  "card" -> "کارڈ"
+                  "online" -> "آن لائن"
+                  else -> value
+                }
+              }
+
+              private fun formatTransactionDate(timeMillis: Long, isUrdu: Boolean): String {
+                val now = System.currentTimeMillis()
+                val diff = now - timeMillis
+                val oneDay = 86400_000L
+                val locale = if (isUrdu) Locale("ur", "PK") else Locale.getDefault()
+                return when {
+                  diff < oneDay && diff >= 0 -> {
+                    val timeFormat = SimpleDateFormat("h:mm a", locale)
+                    (if (isUrdu) "آج، " else "Today, ") + timeFormat.format(Date(timeMillis))
+                  }
+                  diff < 2 * oneDay && diff >= oneDay -> if (isUrdu) "کل" else "Yesterday"
+                  else -> SimpleDateFormat("d MMM yyyy", locale).format(Date(timeMillis))
+                }
+              }
+              """
+          elif "private fun formatTransactionDate(timeMillis: Long, isUrdu: Boolean)" not in s:
+              raise SystemExit("Transaction date formatter shape changed")
+          card.write_text(s, encoding="utf-8")
+
+          patch("app/src/main/java/com/example/ui/screens/HomeScreen.kt", [
+            ("          onClick = { onTransactionClick(tx) }\n        )",
+             "          onClick = { onTransactionClick(tx) },\n          isUrdu = isUrdu\n        )")
+          ])
+          patch("app/src/main/java/com/example/ui/screens/BusinessHomeScreen.kt", [
+            ("TransactionItemCard(tx, uiState.currencySymbol, { onTransactionClick(tx) })",
+             "TransactionItemCard(tx, uiState.currencySymbol, { onTransactionClick(tx) }, isUrdu = urdu)")
+          ])
+          patch("app/src/main/java/com/example/ui/screens/StatsScreen.kt", [
+            ("import com.example.data.model.TransactionType\n",
+             "import com.example.data.model.TransactionType\nimport com.example.data.model.AppLanguage\n"),
+            ("        onClick = { onTransactionClick(tx) }\n      )",
+             "        onClick = { onTransactionClick(tx) },\n        isUrdu = uiState.appLanguage == AppLanguage.URDU\n      )")
+          ])
+          patch("app/src/main/java/com/example/ui/screens/SettingsScreen.kt", [
+            ('text = "APP VERSION & APK UPDATE (ورژن 2.7.0)"',
+             'text = if (isUrdu) "ایپ ورژن اور APK اپ ڈیٹ" else "APP VERSION & APK UPDATE"'),
+            ('text = "Arshad Finance V3.2.0"', 'text = "Arshad Finance"'),
+            ('text = "LATEST ✓"', 'text = if (isUrdu) "تازہ ترین ✓" else "LATEST ✓"'),
+            ('text = "Build 33 • Login, Mode Switcher, FBR Statements & Plans"',
+             'text = if (isUrdu) "لاگ اِن، بزنس موڈ، FBR اسٹیٹمنٹ اور پلانز" else "Login, Business Modes, FBR Statements & Plans"'),
+            ('text = "تازہ ترین اپ ڈیٹ (What\'s New in V3.2.0):"',
+             'text = if (isUrdu) "نئی تبدیلیاں" else "What\'s New"'),
+            ('text = "Download APK / Update Guide (تازہ ترین APK ڈاؤنلوڈ کریں)"',
+             'text = if (isUrdu) "تازہ ترین APK ڈاؤنلوڈ / اپ ڈیٹ گائیڈ" else "Download APK / Update Guide"'),
+            ('text = "Arshad Finance & Traders V2.7.0"', 'text = "Arshad Finance & Traders"'),
+            ('text = "All-in-One POS, Billing, Multi-Role & Subscription Khata"',
+             'text = if (isUrdu) "مکمل POS، بلنگ، متعدد صارفین اور سبسکرپشن کھاتہ" else "All-in-One POS, Billing, Multi-Role & Subscription Khata"'),
+            ('Text(if (isUrdu) "تازہ ترین APK ڈاؤنلوڈ (ورژن 3.3.0)" else "Download Latest Version APK (v3.3.0)"',
+             'Text(if (isUrdu) "تازہ ترین APK ڈاؤنلوڈ" else "Download Latest Version APK"')
+          ])
+          print("Localized recent activity and removed stale duplicate version labels.")
+          PY
+
       - name: Apply selected-language thermal receipt preview
         shell: bash
         run: |
