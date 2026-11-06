@@ -118,7 +118,7 @@ fun HomePromoBannerSlider(
             modifier = Modifier.align(Alignment.CenterEnd).padding(end = 14.dp).size(76.dp),
             tint = Color.White.copy(alpha = 0.25f))
           Column(Modifier.fillMaxWidth(0.76f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(if (isUrdu) "ARSHAD FINANCE • SMART BUSINESS" else "ARSHAD FINANCE • SMART BUSINESS",
+            Text(if (isUrdu) "ارشاد فنانس • اسمارٹ کاروبار" else "ARSHAD FINANCE • SMART BUSINESS",
               style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.82f),
               fontWeight = FontWeight.Bold, maxLines = 1)
             Text(if (isUrdu) slide.titleUr else slide.titleEn,
