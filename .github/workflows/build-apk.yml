@@ -150,11 +150,17 @@ jobs:
           print("Standalone package, version and launcher label configured")
           PY
 
-      - name: Set up Java 17
+      - name: Fix trial header and demo catalogue test failures
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/scripts/apply-test-failure-fixes.py" "$PROJECT_DIR"
+
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
 
       - name: Set up Android SDK and required packages
         uses: android-actions/setup-android@v3
