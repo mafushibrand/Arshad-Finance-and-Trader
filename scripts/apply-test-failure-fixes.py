@@ -31,11 +31,39 @@ addition = anchor + """      // Show plan access after a trial/payment relations
         )
       }
 """
+if "showSubscriptionAccess: Boolean = false" not in s:
+    sig = '  businessName: String = "Arshad Finance"\n'
+    if sig not in s:
+        raise SystemExit("HeaderBar parameter anchor not found")
+    s = s.replace(sig, sig + "  showSubscriptionAccess: Boolean = false\n", 1)
 if "SubscriptionAccessCard(" not in s:
     if anchor not in s:
         raise SystemExit("HeaderBar layout anchor not found; no unsafe edit made")
     s = s.replace(anchor, addition, 1)
+s = s.replace("if (subscriptionState.trialStartedMillis > 0L || subscriptionState.isActivated ||",
+              "if (showSubscriptionAccess && (subscriptionState.trialStartedMillis > 0L || subscriptionState.isActivated ||", 1)
+s = s.replace("subscriptionState.hasPaidBefore || subscriptionState.clockBlocked) {",
+              "subscriptionState.hasPaidBefore || subscriptionState.clockBlocked)) {", 1)
 header.write_text(s, encoding="utf-8")
+
+main = root / "app/src/main/java/com/example/MainActivity.kt"
+m = main.read_text(encoding="utf-8")
+if "showSubscriptionAccess = uiState.selectedTab == FinanceTab.HOME" not in m:
+    needle = "            businessName = uiState.businessProfile.businessName\n"
+    if needle not in m:
+        raise SystemExit("MainActivity HeaderBar call anchor not found")
+    m = m.replace(needle, needle + "            showSubscriptionAccess = uiState.selectedTab == FinanceTab.HOME\n", 1)
+    main.write_text(m, encoding="utf-8")
+
+test = root / "app/src/test/java/com/example/AccessDesignTest.kt"
+t = test.read_text(encoding="utf-8")
+needle = "       subscriptionState=SubscriptionState(trialStartedMillis=System.currentTimeMillis()-86_400_000L),onTrialAlertClick={opened=true})"
+replacement = "       subscriptionState=SubscriptionState(trialStartedMillis=System.currentTimeMillis()-86_400_000L),onTrialAlertClick={opened=true},showSubscriptionAccess=true)"
+if needle in t:
+    t = t.replace(needle, replacement, 1)
+elif replacement not in t:
+    raise SystemExit("AccessDesignTest HeaderBar call anchor not found")
+test.write_text(t, encoding="utf-8")
 
 gradle = root / "app/build.gradle.kts"
 g = gradle.read_text(encoding="utf-8")
