@@ -193,7 +193,7 @@ home.write_text(h, encoding="utf-8")
 test = root / "app/src/test/java/com/example/HomePromoBannerTest.kt"
 test.write_text(r'''package com.example
 
-import androidx.compose.ui.test.assertExists
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -217,9 +217,9 @@ class HomePromoBannerTest {
         HomePromoBannerSlider(AppMode.BUSINESS_RETAIL, false, {}, {}, {}, {})
       }
     }
-    compose.onNodeWithTag("home_promo_banner_slider").assertExists()
-    compose.onNodeWithTag("home_promo_banner_0").assertExists()
-    compose.onNodeWithText("Sell smarter, every day").assertExists()
+    compose.onNodeWithTag("home_promo_banner_slider").assertIsDisplayed()
+    compose.onNodeWithTag("home_promo_banner_0").assertIsDisplayed()
+    compose.onNodeWithText("Sell smarter, every day").assertIsDisplayed()
   }
 
   @Test fun personalModeShowsPersonalFinancePromos() {
@@ -228,8 +228,8 @@ class HomePromoBannerTest {
         HomePromoBannerSlider(AppMode.PERSONAL_KHATA, true, {}, {}, {}, {})
       }
     }
-    compose.onNodeWithTag("home_promo_banner_slider").assertExists()
-    compose.onNodeWithText("اپنے پیسوں کا مکمل حساب").assertExists()
+    compose.onNodeWithTag("home_promo_banner_slider").assertIsDisplayed()
+    compose.onNodeWithText("اپنے پیسوں کا مکمل حساب").assertIsDisplayed()
   }
 }
 ''', encoding="utf-8")
