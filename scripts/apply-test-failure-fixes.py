@@ -52,7 +52,7 @@ if "showSubscriptionAccess = uiState.selectedTab == FinanceTab.HOME" not in m:
     needle = "            businessName = uiState.businessProfile.businessName\n"
     if needle not in m:
         raise SystemExit("MainActivity HeaderBar call anchor not found")
-    m = m.replace(needle, needle + "            showSubscriptionAccess = uiState.selectedTab == FinanceTab.HOME\n", 1)
+    m = m.replace(needle, "            businessName = uiState.businessProfile.businessName,\n" + "            showSubscriptionAccess = uiState.selectedTab == FinanceTab.HOME\n", 1)
     main.write_text(m, encoding="utf-8")
 
 test = root / "app/src/test/java/com/example/AccessDesignTest.kt"
