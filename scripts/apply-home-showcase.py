@@ -190,11 +190,16 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import com.example.data.model.AppMode
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import com.example.ui.components.HomePromoBannerSlider
 import com.example.ui.theme.MyApplicationTheme
 import org.junit.Rule
 import org.junit.Test
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [35])
 class HomePromoBannerTest {
   @get:Rule val compose = createComposeRule()
 
