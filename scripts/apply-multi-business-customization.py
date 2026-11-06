@@ -28,6 +28,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.draw.clip
 import coil.compose.AsyncImage
 ''',"picker imports"),
 ('  var confirmDelete by remember { mutableStateOf(false) }\n','''  var confirmDelete by remember { mutableStateOf(false) }
@@ -84,6 +85,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 ''',"service picker imports"),
 ('  var icon by remember{mutableStateOf(service?.icon ?: "🛠️")};var description by remember{mutableStateOf(service?.description ?: "")};var error by remember{mutableStateOf("")}\n','''  var icon by remember{mutableStateOf(service?.icon ?: "🛠️")};var description by remember{mutableStateOf(service?.description ?: "")};var error by remember{mutableStateOf("")}
