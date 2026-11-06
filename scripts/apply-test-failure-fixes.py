@@ -35,7 +35,7 @@ if "showSubscriptionAccess: Boolean = false" not in s:
     sig = '  businessName: String = "Arshad Finance"\n'
     if sig not in s:
         raise SystemExit("HeaderBar parameter anchor not found")
-    s = s.replace(sig, sig + "  showSubscriptionAccess: Boolean = false\n", 1)
+    s = s.replace(sig, '  businessName: String = "Arshad Finance",\n  showSubscriptionAccess: Boolean = false\n', 1)
 if "SubscriptionAccessCard(" not in s:
     if anchor not in s:
         raise SystemExit("HeaderBar layout anchor not found; no unsafe edit made")
