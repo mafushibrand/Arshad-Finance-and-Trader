@@ -137,10 +137,10 @@ jobs:
           p = Path(sys.argv[1])
           s = p.read_text()
           replacements = {
-              'applicationId = "com.aistudio.arshadfinance.v2stock"': 'applicationId = "com.aistudio.arshadfinance.v2stock.standalone"',
-              'versionCode = 45': 'versionCode = 46',
-              'versionName = "4.6.0-plans"': 'versionName = "4.6.0-standalone"',
-              'manifestPlaceholders["appLabel"] = "@string/app_name"': 'manifestPlaceholders["appLabel"] = "Arshad Finance Standalone"',
+              'applicationId = "com.aistudio.arshadfinance.v2stock"': 'applicationId = "com.aistudio.arshadfinance.v2stock.standalone2"',
+              'versionCode = 45': 'versionCode = 47',
+              'versionName = "4.6.0-plans"': 'versionName = "4.6.1"',
+              'manifestPlaceholders["appLabel"] = "@string/app_name"': 'manifestPlaceholders["appLabel"] = "Arshad Finance"',
           }
           for before, after in replacements.items():
               if before not in s:
@@ -175,6 +175,26 @@ jobs:
           packages: 'platform-tools platforms;android-36.1 build-tools;36.0.0'
           accept-android-sdk-licenses: true
 
+      - name: Restore persistent signing key for future APK updates
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: arshad-finance-standalone-signing-v1
+
+      - name: Create signing key once when cache is empty
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.android
+          if [[ ! -f ~/.android/debug.keystore ]]; then
+            keytool -genkeypair -v \
+              -keystore ~/.android/debug.keystore \
+              -storepass android -keypass android \
+              -alias androiddebugkey \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Arshad Finance, O=Arshad Finance, C=PK"
+          fi
+
       - name: Set up Gradle 9.3.1
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -202,7 +222,7 @@ jobs:
           APK="$(find "$PROJECT_DIR/app/build/outputs/apk/debug" -maxdepth 1 -name '*.apk' -print -quit)"
           test -n "$APK"
           mkdir -p "$PROJECT_DIR/dist"
-          cp "$APK" "$PROJECT_DIR/dist/ArshadFinance-4.6.0-Standalone.apk"
+          cp "$APK" "$PROJECT_DIR/dist/ArshadFinance-4.6.1.apk"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.6.0-Standalone.apk" > "$PROJECT_DIR/dist/signature-check.txt"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.6.0-Standalone.apk" > "$PROJECT_DIR/dist/package-info.txt"
           sha256sum "$PROJECT_DIR/dist/ArshadFinance-4.6.0-Standalone.apk" > "$PROJECT_DIR/dist/SHA256SUMS.txt"
@@ -212,7 +232,7 @@ jobs:
       - name: Upload verified APK
         uses: actions/upload-artifact@v4
         with:
-          name: ArshadFinance-4.6.0-Standalone-APK
+          name: ArshadFinance-4.6.1-APK
           path: ${{ env.PROJECT_DIR }}/dist/
           if-no-files-found: error
           retention-days: 30
