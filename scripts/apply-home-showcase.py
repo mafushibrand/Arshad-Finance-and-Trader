@@ -30,8 +30,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.data.model.AppMode
 import kotlinx.coroutines.delay
-import coil.compose.AsyncImage
-import androidx.compose.ui.layout.ContentScale
 
 private data class PromoSlide(
   val titleEn: String,
@@ -54,35 +52,34 @@ fun HomePromoBannerSlider(
   onProductsClick: () -> Unit,
   onServicesClick: () -> Unit,
   onKhataClick: () -> Unit,
-  bannerImageUri: String = ""
 ) {
   val slides = remember(appMode, isUrdu, onPosClick, onProductsClick, onServicesClick, onKhataClick) {
     if (appMode == AppMode.PERSONAL_KHATA) listOf(
       PromoSlide("Your money, clearly tracked", "اپنے پیسوں کا مکمل حساب",
         "Keep income, expenses and budgets together", "آمدن، اخراجات اور بجٹ ایک جگہ",
         "View khata", "کھاتہ دیکھیں", Icons.Default.AccountBalanceWallet,
-        listOf(Color(0xFF123A80), Color(0xFF2563EB)), onKhataClick),
+        listOf(Color(0xFF064E3B), Color(0xFF16A34A)), onKhataClick),
       PromoSlide("Plan bills ahead", "بلوں کی پہلے سے منصوبہ بندی",
         "Stay ready for upcoming payments", "آنے والی ادائیگیوں کے لیے تیار رہیں",
         "Open budgets", "بجٹ کھولیں", Icons.Default.CalendarMonth,
-        listOf(Color(0xFF6D28D9), Color(0xFF9333EA)), onKhataClick),
+        listOf(Color(0xFF166534), Color(0xFF22C55E)), onKhataClick),
       PromoSlide("Simple daily insights", "روزانہ حساب کی آسان جھلک",
         "See where your money goes", "دیکھیں آپ کا پیسہ کہاں خرچ ہوتا ہے",
         "View reports", "رپورٹس دیکھیں", Icons.Default.Insights,
-        listOf(Color(0xFF047857), Color(0xFF10B981)), onKhataClick)
+        listOf(Color(0xFF14532D), Color(0xFF4ADE80)), onKhataClick)
     ) else listOf(
       PromoSlide("Sell smarter, every day", "ہر روز بہتر انداز میں فروخت",
         "Fast checkout, clear bills and fewer mistakes", "تیز فروخت، واضح بل اور کم غلطیاں",
         "Start a sale", "فروخت شروع کریں", Icons.Default.ShoppingCart,
-        listOf(Color(0xFF063B82), Color(0xFF1479D2)), onPosClick),
+        listOf(Color(0xFF064E3B), Color(0xFF16A34A)), onPosClick),
       PromoSlide("Your products, in one place", "آپ کی تمام مصنوعات ایک جگہ",
         "Search stock, prices and low-stock items", "اسٹاک، قیمتیں اور کم مقدار والی اشیاء تلاش کریں",
         "Explore products", "مصنوعات دیکھیں", Icons.Default.Inventory2,
-        listOf(Color(0xFF075B46), Color(0xFF12A878)), onProductsClick),
+        listOf(Color(0xFF14532D), Color(0xFF22C55E)), onProductsClick),
       PromoSlide("Grow with services & khata", "سروسز اور کھاتے کے ساتھ ترقی",
         "Manage jobs, customers and payments", "کام، گاہک اور ادائیگیاں منظم کریں",
         "Explore services", "سروسز دیکھیں", Icons.Default.Handyman,
-        listOf(Color(0xFF6B2B91), Color(0xFFB044A6)), onServicesClick)
+        listOf(Color(0xFF166534), Color(0xFF86EFAC)), onServicesClick)
     )
   }
   val pagerState = rememberPagerState(pageCount = { slides.size })
@@ -112,10 +109,6 @@ fun HomePromoBannerSlider(
             .background(Brush.linearGradient(slide.colors))
             .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-          if (bannerImageUri.isNotBlank()) {
-            AsyncImage(model = bannerImageUri, contentDescription = null, contentScale = ContentScale.Crop,
-              alpha = 0.58f, modifier = Modifier.fillMaxSize())
-          }
           Box(
             Modifier.align(Alignment.CenterEnd).size(150.dp)
               .offset(x = 22.dp, y = 18.dp)
@@ -183,7 +176,6 @@ if "HomePromoBannerSlider(" not in h:
         onProductsClick = onStockClick,
         onServicesClick = onServicesClick,
         onKhataClick = onBillingClick,
-        bannerImageUri = uiState.businessProfile.bannerImageUri
       )
     }
 '''
