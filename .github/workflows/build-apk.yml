@@ -227,7 +227,14 @@ jobs:
           APK="$(find "$PROJECT_DIR/app/build/outputs/apk/debug" -maxdepth 1 -name '*.apk' -print -quit)"
           test -n "$APK"
           mkdir -p "$PROJECT_DIR/dist"
-          cp "$APK" "$PROJECT_DIR/dist/ArshadFinance-4.6.2.apk"
+          # Re-sign with both legacy JAR (v1) and modern APK (v2) schemes.
+          # Keep the persistent CI keystore so subsequent standalone builds retain identity.
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" sign \
+            --ks "$HOME/.android/debug.keystore" \
+            --ks-pass pass:android --key-pass pass:android \
+            --ks-key-alias androiddebugkey \
+            --v1-signing-enabled true --v2-signing-enabled true \
+            --out "$PROJECT_DIR/dist/ArshadFinance-4.6.2.apk" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.6.2.apk" > "$PROJECT_DIR/dist/signature-check.txt"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.6.2.apk" > "$PROJECT_DIR/dist/package-info.txt"
           sha256sum "$PROJECT_DIR/dist/ArshadFinance-4.6.2.apk" > "$PROJECT_DIR/dist/SHA256SUMS.txt"
