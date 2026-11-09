@@ -59,7 +59,6 @@ jobs:
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/scripts/apply-language-fixes.py" "$PROJECT_DIR"
 
-
       - name: Correct stale and mixed-language app version labels
         shell: bash
         run: |
@@ -93,7 +92,7 @@ jobs:
                   raise SystemExit("Expected old version label not found: " + old[:75])
               s = s.replace(old, new, 1)
           p.write_text(s, encoding="utf-8")
-          print("Removed obsolete V2.7.0/V3.2.0/V3.3.0 labels and localized settings labels.")
+          print("Removed obsolete version labels and localized settings labels.")
           PY
 
       - name: Apply selected-language thermal receipt preview
@@ -127,7 +126,7 @@ jobs:
               print("Fixed ListTile parameter order")
           PY
 
-      - name: Give standalone APK a separate package identity
+      - name: Give standalone APK a fresh package identity
         shell: bash
         run: |
           set -euo pipefail
@@ -137,9 +136,9 @@ jobs:
           p = Path(sys.argv[1])
           s = p.read_text()
           replacements = {
-              'applicationId = "com.aistudio.arshadfinance.v2stock"': 'applicationId = "com.aistudio.arshadfinance.v2stock.standalone2"',
-              'versionCode = 45': 'versionCode = 47',
-              'versionName = "4.6.0-plans"': 'versionName = "4.6.1"',
+              'applicationId = "com.aistudio.arshadfinance.v2stock"': 'applicationId = "com.aistudio.arshadfinance.v2stock.standalone3"',
+              'versionCode = 45': 'versionCode = 48',
+              'versionName = "4.6.0-plans"': 'versionName = "4.6.2"',
               'manifestPlaceholders["appLabel"] = "@string/app_name"': 'manifestPlaceholders["appLabel"] = "Arshad Finance"',
           }
           for before, after in replacements.items():
@@ -147,7 +146,7 @@ jobs:
                   raise SystemExit(f"Expected build setting not found: {before}")
               s = s.replace(before, after, 1)
           p.write_text(s)
-          print("Standalone package, version and launcher label configured")
+          print("Configured fresh standalone3 package, version 4.6.2")
           PY
 
       - name: Fix trial header and demo catalogue test failures
@@ -228,17 +227,17 @@ jobs:
           APK="$(find "$PROJECT_DIR/app/build/outputs/apk/debug" -maxdepth 1 -name '*.apk' -print -quit)"
           test -n "$APK"
           mkdir -p "$PROJECT_DIR/dist"
-          cp "$APK" "$PROJECT_DIR/dist/ArshadFinance-4.6.1.apk"
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.6.1.apk" > "$PROJECT_DIR/dist/signature-check.txt"
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.6.1.apk" > "$PROJECT_DIR/dist/package-info.txt"
-          sha256sum "$PROJECT_DIR/dist/ArshadFinance-4.6.1.apk" > "$PROJECT_DIR/dist/SHA256SUMS.txt"
+          cp "$APK" "$PROJECT_DIR/dist/ArshadFinance-4.6.2.apk"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.6.2.apk" > "$PROJECT_DIR/dist/signature-check.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.6.2.apk" > "$PROJECT_DIR/dist/package-info.txt"
+          sha256sum "$PROJECT_DIR/dist/ArshadFinance-4.6.2.apk" > "$PROJECT_DIR/dist/SHA256SUMS.txt"
           cat "$PROJECT_DIR/dist/signature-check.txt"
           head -n 3 "$PROJECT_DIR/dist/package-info.txt"
 
       - name: Upload verified APK
         uses: actions/upload-artifact@v4
         with:
-          name: ArshadFinance-4.6.1-APK
+          name: ArshadFinance-4.6.2-APK
           path: ${{ env.PROJECT_DIR }}/dist/
           if-no-files-found: error
           retention-days: 30
