@@ -30,6 +30,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.data.model.AppMode
 import kotlinx.coroutines.delay
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 
 private data class PromoSlide(
   val titleEn: String,
@@ -52,6 +54,7 @@ fun HomePromoBannerSlider(
   onProductsClick: () -> Unit,
   onServicesClick: () -> Unit,
   onKhataClick: () -> Unit,
+  bannerImageUri: String = ""
 ) {
   val slides = remember(appMode, isUrdu, onPosClick, onProductsClick, onServicesClick, onKhataClick) {
     if (appMode == AppMode.PERSONAL_KHATA) listOf(
@@ -109,6 +112,10 @@ fun HomePromoBannerSlider(
             .background(Brush.linearGradient(slide.colors))
             .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
+          if (bannerImageUri.isNotBlank()) {
+            AsyncImage(model = bannerImageUri, contentDescription = null, contentScale = ContentScale.Crop,
+              alpha = 0.58f, modifier = Modifier.fillMaxSize())
+          }
           Box(
             Modifier.align(Alignment.CenterEnd).size(150.dp)
               .offset(x = 22.dp, y = 18.dp)
