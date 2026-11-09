@@ -136,9 +136,9 @@ jobs:
           p = Path(sys.argv[1])
           s = p.read_text()
           replacements = {
-              'applicationId = "com.aistudio.arshadfinance.v2stock"': 'applicationId = "com.aistudio.arshadfinance.v2stock.standalone3"',
-              'versionCode = 45': 'versionCode = 48',
-              'versionName = "4.6.0-plans"': 'versionName = "4.6.2"',
+              'applicationId = "com.aistudio.arshadfinance.v2stock"': 'applicationId = "com.aistudio.arshadfinance.v2stock.standalone4"',
+              'versionCode = 45': 'versionCode = 49',
+              'versionName = "4.6.0-plans"': 'versionName = "4.6.3"',
               'manifestPlaceholders["appLabel"] = "@string/app_name"': 'manifestPlaceholders["appLabel"] = "Arshad Finance"',
           }
           for before, after in replacements.items():
@@ -146,7 +146,7 @@ jobs:
                   raise SystemExit(f"Expected build setting not found: {before}")
               s = s.replace(before, after, 1)
           p.write_text(s)
-          print("Configured fresh standalone3 package, version 4.6.2")
+          print("Configured fresh standalone4 package, version 4.6.3")
           PY
 
       - name: Fix trial header and demo catalogue test failures
@@ -234,17 +234,17 @@ jobs:
             --ks-pass pass:android --key-pass pass:android \
             --ks-key-alias androiddebugkey \
             --v1-signing-enabled true --v2-signing-enabled true \
-            --out "$PROJECT_DIR/dist/ArshadFinance-4.6.2.apk" "$APK"
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.6.2.apk" > "$PROJECT_DIR/dist/signature-check.txt"
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.6.2.apk" > "$PROJECT_DIR/dist/package-info.txt"
-          sha256sum "$PROJECT_DIR/dist/ArshadFinance-4.6.2.apk" > "$PROJECT_DIR/dist/SHA256SUMS.txt"
+            --out "$PROJECT_DIR/dist/ArshadFinance-4.6.3.apk" "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.6.3.apk" > "$PROJECT_DIR/dist/signature-check.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.6.3.apk" > "$PROJECT_DIR/dist/package-info.txt"
+          sha256sum "$PROJECT_DIR/dist/ArshadFinance-4.6.3.apk" > "$PROJECT_DIR/dist/SHA256SUMS.txt"
           cat "$PROJECT_DIR/dist/signature-check.txt"
           head -n 3 "$PROJECT_DIR/dist/package-info.txt"
 
       - name: Upload verified APK
         uses: actions/upload-artifact@v4
         with:
-          name: ArshadFinance-4.6.2-APK
+          name: ArshadFinance-4.6.3-APK
           path: ${{ env.PROJECT_DIR }}/dist/
           if-no-files-found: error
           retention-days: 30
