@@ -255,7 +255,7 @@ private fun StoreProductCard(item: InventoryItem, currency: String, urdu: Boolea
   val details = remember(item.detailsJson) { runCatching { JSONObject(item.detailsJson) }.getOrDefault(JSONObject()) }
   val photo = details.optString("imageUri").takeIf { it.isNotBlank() }
   val demoPhoto = demoProductImage(item)
-  val rawName = item.name.substringAfter(" ", item.name)
+  val rawName = item.name.removePrefix(item.icon).trim()
   val englishTitle = rawName.substringBefore(" / ").ifBlank { rawName }
   val urduTitle = details.optString("nameUrdu").ifBlank { rawName.substringAfter(" / ", englishTitle) }
   val title = if (urdu) urduTitle else englishTitle
