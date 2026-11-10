@@ -19,6 +19,12 @@ images = {
     "af_demo_bakery.jpg": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=720&h=560&fit=crop&fm=jpg&q=80",
     "af_demo_dryfruits.jpg": "https://images.unsplash.com/photo-1608797178974-15b35a64ede9?w=720&h=560&fit=crop&fm=jpg&q=80",
     "af_demo_spices.jpg": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=720&h=560&fit=crop&fm=jpg&q=80",
+    "af_demo_snacks.jpg": "https://images.unsplash.com/photo-1621939514649-280e2aa2f8a8?w=1200&h=900&fit=crop&fm=jpg&q=88",
+    "af_demo_personalcare.jpg": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1200&h=900&fit=crop&fm=jpg&q=88",
+    "af_demo_household.jpg": "https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?w=1200&h=900&fit=crop&fm=jpg&q=88",
+    "af_demo_babycare.jpg": "https://images.unsplash.com/photo-1604917877934-07d8d248d396?w=1200&h=900&fit=crop&fm=jpg&q=88",
+    "af_demo_kitchen.jpg": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=1200&h=900&fit=crop&fm=jpg&q=88",
+    "af_demo_stationery.jpg": "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1200&h=900&fit=crop&fm=jpg&q=88",
 }
 for name, url in images.items():
     target = res / name
