@@ -254,10 +254,11 @@ fun BusinessHomeScreen(
 private fun StoreProductCard(item: InventoryItem, currency: String, urdu: Boolean, onAdd: () -> Unit, modifier: Modifier = Modifier) {
   val details = remember(item.detailsJson) { runCatching { JSONObject(item.detailsJson) }.getOrDefault(JSONObject()) }
   val photo = details.optString("imageUri").takeIf { it.isNotBlank() }
+  val demoPhoto = demoProductImage(item)
   val title = if (urdu) details.optString("nameUrdu").ifBlank { item.name } else item.name
   Card(modifier, shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), elevation = CardDefaults.cardElevation(2.dp)) {
     Column(Modifier.padding(9.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
-      if (photo != null) AsyncImage(model = photo, contentDescription = title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxWidth().height(112.dp).clip(RoundedCornerShape(12.dp)))
+      if (photo != null || demoPhoto != null) AsyncImage(model = photo ?: demoPhoto, contentDescription = title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxWidth().height(112.dp).clip(RoundedCornerShape(12.dp)))
       else Box(Modifier.fillMaxWidth().height(112.dp).clip(RoundedCornerShape(12.dp)).background(StoreMint), contentAlignment = Alignment.Center) {
         Text(item.icon, fontSize = 42.sp)
       }
@@ -268,6 +269,23 @@ private fun StoreProductCard(item: InventoryItem, currency: String, urdu: Boolea
         Icon(Icons.Default.AddShoppingCart, null, modifier = Modifier.size(17.dp)); Spacer(Modifier.width(5.dp)); Text(if (urdu) "کارٹ میں شامل" else "Add to Cart", maxLines = 1)
       }
     }
+  }
+}
+
+private fun demoProductImage(item: InventoryItem): Int? {
+  val text = "${item.name} ${item.category}".lowercase(Locale.ROOT)
+  return when {
+    "tomato" in text || "vegetable" in text || "سبزی" in text -> com.example.R.drawable.af_demo_tomatoes
+    "onion" in text || "پیاز" in text -> com.example.R.drawable.af_demo_onions
+    "chicken" in text || "meat" in text || "beef" in text || "گوشت" in text -> com.example.R.drawable.af_demo_chicken
+    "banana" in text || "fruit" in text || "سیب" in text || "کیلے" in text -> com.example.R.drawable.af_demo_bananas
+    "bakery" in text || "bread" in text || "cake" in text || "بیکری" in text -> com.example.R.drawable.af_demo_bakery
+    "dry fruit" in text || "almond" in text || "pistachio" in text || "بادام" in text -> com.example.R.drawable.af_demo_dryfruits
+    "spice" in text || "masala" in text || "مرچ" in text || "ہلدی" in text -> com.example.R.drawable.af_demo_spices
+    "garment" in text || "cloth" in text || "fashion" in text || "clothing" in text -> com.example.R.drawable.af_demo_fashion
+    "mobile" in text || "electronic" in text || "computer" in text || "laptop" in text -> com.example.R.drawable.af_demo_electronics
+    "grocery" in text || "karyana" in text || "general" in text -> com.example.R.drawable.af_demo_grocery
+    else -> null
   }
 }
 
