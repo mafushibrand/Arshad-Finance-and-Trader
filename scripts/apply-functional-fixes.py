@@ -164,3 +164,17 @@ replace_once("app/src/main/java/com/example/ui/dialogs/PremiumQuickStockAdjustDi
     }''')
 
 print("All functional stock/POS fixes applied.")
+
+# Build-time navigation inspection: expose the exact bottom-tab list for safe restoration.
+for candidate in root.rglob("*.kt"):
+    try:
+        content = candidate.read_text(encoding="utf-8")
+    except Exception:
+        continue
+    if "fun BottomNavBar" in content or "BottomNavBar(" in content:
+        print("BOTTOM_NAV_SOURCE", candidate)
+        rows = content.splitlines()
+        for index, row in enumerate(rows):
+            if any(term in row for term in ("FinanceTab.", "NavigationBarItem", "BottomNavBar", "val tabs", "listOf(")):
+                lo, hi = max(0, index - 2), min(len(rows), index + 4)
+                print("\n".join(f"{n+1}: {rows[n]}" for n in range(lo, hi)))
