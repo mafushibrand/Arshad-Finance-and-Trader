@@ -407,4 +407,23 @@ if promo.exists():
         promo.write_text(ps,encoding='utf-8')
         print('Removed static sample-price deals from home banner component')
 
+
+# Keep the visual regression test aligned with the storefront rather than the retired finance dashboard.
+design_test = root/'app/src/test/java/com/example/BusinessDesignTest.kt'
+if design_test.exists():
+    ts = design_test.read_text(encoding='utf-8')
+    if 'import androidx.compose.ui.test.assertExists' not in ts:
+        ts = ts.replace('import androidx.compose.ui.test.onNodeWithText\\n','import androidx.compose.ui.test.onNodeWithText\\nimport androidx.compose.ui.test.assertExists\\n',1)
+    old_test = '''    compose.onNodeWithText(if (urdu) "وصول کریں" else "Receive").performClick()
+    compose.onNodeWithContentDescription(if (urdu) "کاروبار کی ترتیب" else "Business setup").performClick()
+    assertTrue("Receive action must remain connected", received)
+    assertTrue("Business setup action must remain connected", setup)'''
+    new_test = '''    compose.onNodeWithText(if (urdu) "کیٹیگریز" else "Categories").assertExists()
+    compose.onNodeWithText(if (urdu) "کیٹیگری سیٹنگز" else "Category settings").assertExists()
+    compose.onNodeWithContentDescription(if (urdu) "دکان کی ترتیب" else "Customize shop").performClick()
+    assertTrue("Business setup action must remain connected", setup)'''
+    if old_test in ts:
+        ts = ts.replace(old_test,new_test,1)
+    design_test.write_text(ts,encoding='utf-8')
+
 print('Dynamic home/catalogue patch complete')
