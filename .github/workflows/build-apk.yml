@@ -163,8 +163,8 @@ jobs:
           s = p.read_text()
           replacements = {
               'applicationId = "com.aistudio.arshadfinance.v2stock"': 'applicationId = "com.aistudio.arshadfinance.v2stock.standalone5"',
-              'versionCode = 45': 'versionCode = 50',
-              'versionName = "4.6.0-plans"': 'versionName = "4.6.4"',
+              'versionCode = 45': 'versionCode = 51',
+              'versionName = "4.6.0-plans"': 'versionName = "4.6.5"',
               'manifestPlaceholders["appLabel"] = "@string/app_name"': 'manifestPlaceholders["appLabel"] = "Arshad Finance"',
           }
           for before, after in replacements.items():
@@ -272,7 +272,7 @@ jobs:
             --ks-pass pass:android --key-pass pass:android \
             --ks-key-alias androiddebugkey \
             --v1-signing-enabled true --v2-signing-enabled true \
-            --out "$PROJECT_DIR/dist/ArshadFinance-4.6.4.apk" "$APK"
+            --out "$PROJECT_DIR/dist/ArshadFinance-4.6.5.apk" "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.6.4.apk" > "$PROJECT_DIR/dist/signature-check.txt"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.6.4.apk" > "$PROJECT_DIR/dist/package-info.txt"
           sha256sum "$PROJECT_DIR/dist/ArshadFinance-4.6.4.apk" > "$PROJECT_DIR/dist/SHA256SUMS.txt"
@@ -282,7 +282,7 @@ jobs:
       - name: Upload verified APK
         uses: actions/upload-artifact@v4
         with:
-          name: ArshadFinance-4.6.4-APK
+          name: ArshadFinance-4.6.5-APK
           path: ${{ env.PROJECT_DIR }}/dist/
           if-no-files-found: error
           retention-days: 30
