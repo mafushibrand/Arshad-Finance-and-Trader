@@ -16,6 +16,8 @@ old = '''  fun items(template: String): List<InventoryItem> {
 new = '''  // Extra retail storefront samples ensure every Home department has real inventory.
   // These are demo records only; seedTemplateDemo merges by name and never replaces user data.
   private val retailStorefrontExtras = listOf(
+    Sample("🍚 Rice Bag / چاول", "Grocery", "bag", 2200.0, 2600.0, 18.0, "🍚"),
+    Sample("🍬 Sugar Bag / چینی", "Grocery", "kg", 145.0, 175.0, 40.0, "🍬"),
     Sample("🍅 Tomatoes / ٹماٹر", "Fresh & Frozen", "kg", 70.0, 110.0, 60.0, "🍅"),
     Sample("🧅 Onions / پیاز", "Fresh & Frozen", "kg", 85.0, 125.0, 55.0, "🧅"),
     Sample("🍗 Chicken / مرغی", "Fresh & Frozen", "kg", 520.0, 620.0, 35.0, "🍗"),
@@ -60,7 +62,7 @@ if old in source:
 elif "retailStorefrontExtras" not in source:
     raise SystemExit("DemoLibrary.items patch anchor missing")
 demo_path.write_text(source, encoding="utf-8")
-print("Added 27 additional retail demo products across all 10 Home departments.")
+print("Added 29 additional retail demo products across all 10 Home departments.")
 
 home_path = root / "app/src/main/java/com/example/ui/screens/BusinessHomeScreen.kt"
 home = home_path.read_text(encoding="utf-8")
