@@ -146,7 +146,7 @@ jobs:
                   raise SystemExit(f"Expected build setting not found: {before}")
               s = s.replace(before, after, 1)
           p.write_text(s)
-          print("Configured fresh standalone4 package, version 4.6.3")
+          print("Configured fresh standalone5 package, version 4.6.4")
           PY
 
       - name: Fix trial header and demo catalogue test failures
