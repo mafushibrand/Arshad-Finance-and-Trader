@@ -54,7 +54,7 @@ print("Home slider now uses bundled HD demo photography, while owner-uploaded ba
 # Final home polish: improve contrast, prevent headline/icon collision, and show real grocery deal cards.
 component_source = component.read_text(encoding="utf-8")
 component_source = component_source.replace(
-    "import androidx.compose.foundation.background\\n",
+    "import androidx.compose.foundation.background\n",
     "import androidx.compose.foundation.background\\nimport androidx.compose.foundation.horizontalScroll\\nimport androidx.compose.foundation.rememberScrollState\\n", 1
 )
 component_source = component_source.replace(
