@@ -29,6 +29,17 @@ jobs:
           echo "Project root: $PROJECT_DIR"
           grep -RInE 'compileSdk|targetSdk|distributionUrl' "$PROJECT_DIR" --include='*.gradle.kts' --include='gradle-wrapper.properties' --include='libs.versions.toml' || true
 
+      - name: Inspect home navigation and business categories
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '--- BusinessHomeScreen category and service references ---'
+          grep -n -i -C 3 -E 'service|category|FinanceTab|bottom|NavigationBarItem' "$PROJECT_DIR/app/src/main/java/com/example/ui/screens/BusinessHomeScreen.kt" || true
+          echo '--- MainActivity navigation references ---'
+          grep -n -i -C 3 -E 'FinanceTab|service|NavigationBarItem|bottomNavigation|NavigationBar' "$PROJECT_DIR/app/src/main/java/com/example/MainActivity.kt" || true
+          echo '--- Navigation source files ---'
+          grep -RIl 'enum class FinanceTab\|sealed.*FinanceTab\|FinanceTab.SERVICES' "$PROJECT_DIR/app/src/main/java" || true
+
       - name: Apply stock safety and unified POS catalogue fixes
         shell: bash
         run: |
