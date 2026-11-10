@@ -178,3 +178,19 @@ for candidate in root.rglob("*.kt"):
             if any(term in row for term in ("FinanceTab.", "NavigationBarItem", "BottomNavBar", "val tabs", "listOf(")):
                 lo, hi = max(0, index - 2), min(len(rows), index + 4)
                 print("\n".join(f"{n+1}: {rows[n]}" for n in range(lo, hi)))
+
+# Restore a dedicated Services destination in the primary business bottom navigation.
+nav_file = root / "app/src/main/java/com/example/ui/components/BottomNavBar.kt"
+nav_source = nav_file.read_text(encoding="utf-8")
+catalog_choice = '''      if (features.products || features.services) NavBarChoice(if (urdu) "کیٹلاگ" else "Catalog", Icons.Default.Inventory2,
+        selectedTab == FinanceTab.STOCK || selectedTab == FinanceTab.SERVICES, "nav_catalog") { sheet = "catalog" }
+'''
+services_choice = catalog_choice + '''      if (features.services) NavBarChoice(if (urdu) "سروسز" else "Services", Icons.Default.Handyman,
+        selectedTab == FinanceTab.SERVICES, "nav_tab_services_direct") { onTabSelected(FinanceTab.SERVICES) }
+'''
+if "nav_tab_services_direct" not in nav_source:
+    if catalog_choice not in nav_source:
+        raise SystemExit("Bottom navigation Catalog anchor not found; refusing unsafe Services tab insertion")
+    nav_source = nav_source.replace(catalog_choice, services_choice, 1)
+    nav_file.write_text(nav_source, encoding="utf-8")
+    print("Restored dedicated bilingual Services bottom tab.")
