@@ -29,6 +29,21 @@ jobs:
           echo "Project root: $PROJECT_DIR"
           grep -RInE 'compileSdk|targetSdk|distributionUrl' "$PROJECT_DIR" --include='*.gradle.kts' --include='gradle-wrapper.properties' --include='libs.versions.toml' || true
 
+      - name: Archive extracted source for complete catalogue implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$PROJECT_DIR"
+          zip -qr "$GITHUB_WORKSPACE/extracted-source-review.zip" app/src/main/java app/src/main/res app/src/test app/build.gradle.kts settings.gradle.kts gradle/libs.versions.toml 2>/dev/null || true
+
+      - name: Upload extracted source review
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArshadFinance-extracted-source-review
+          path: extracted-source-review.zip
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Inspect home navigation and business categories
         shell: bash
         run: |
