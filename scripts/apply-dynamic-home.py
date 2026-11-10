@@ -314,7 +314,7 @@ private fun categoryEmoji(name: String): String = when {
 p=root/'app/src/main/java/com/example/ui/screens/BusinessHomeScreen.kt'; p.write_text(home,encoding='utf-8'); print('Replaced Home with database-backed storefront, category detail pages and cart actions')
 
 # Put trial/payment information on the mode-selection page, not regular Home pages.
-mode='app/src/main/java/com/example/ui/screens/ModeSelectionScreen.kt'
+mode='app/src/main/java/com/example/ui/screens/PremiumModeSelectionScreen.kt'
 s=(root/mode).read_text(encoding='utf-8')
 s=s.replace('import com.example.data.model.AppMode\n','import com.example.data.model.AppMode\nimport com.example.data.model.SubscriptionState\nimport com.example.ui.components.SubscriptionAccessCard\n',1)
 s=s.replace('''  onModeSelected: (AppMode) -> Unit,
