@@ -10,6 +10,11 @@ def replace(rel, old, new, label):
  p.write_text(s.replace(old,new,1),encoding='utf-8'); print('Applied',label)
 
 # Persist owner-managed catalogue categories in the existing business_records table.
+core_path = root/'app/src/main/java/com/example/business/BusinessCore.kt'
+core_text = core_path.read_text(encoding='utf-8')
+if 'import kotlinx.coroutines.flow.first' not in core_text:
+ core_text = core_text.replace('import kotlinx.coroutines.flow.Flow\n','import kotlinx.coroutines.flow.Flow\nimport kotlinx.coroutines.flow.first\n',1)
+ core_path.write_text(core_text,encoding='utf-8')
 replace('app/src/main/java/com/example/business/BusinessCore.kt',
 '''class BusinessCore(private val db: FinanceDatabase) {
   val records = db.businessDao().records()
@@ -27,7 +32,7 @@ replace('app/src/main/java/com/example/business/BusinessCore.kt',
     if (oldName != null) {
       val old = current.firstOrNull { it.title.equals(oldName, true) } ?: error("Category not found / کیٹیگری نہیں ملی")
       dao.update(old.copy(archived = true, updatedAt = System.currentTimeMillis()))
-      db.financeDao().getAllInventoryItems().filter { it.category.equals(oldName, true) }.forEach { item ->
+      db.financeDao().getAllInventoryItems().first().filter { it.category.equals(oldName, true) }.forEach { item ->
         db.financeDao().updateInventoryItem(item.copy(category = clean, lastUpdatedMillis = System.currentTimeMillis()))
       }
     }
@@ -37,7 +42,7 @@ replace('app/src/main/java/com/example/business/BusinessCore.kt',
     val dao = db.businessDao()
     val category = dao.allRecords().firstOrNull { it.kind == "CATALOG_CATEGORY" && !it.archived && it.title.equals(name, true) }
     if (category != null) dao.update(category.copy(archived = true, updatedAt = System.currentTimeMillis()))
-    db.financeDao().getAllInventoryItems().filter { it.category.equals(name, true) }.forEach { item ->
+    db.financeDao().getAllInventoryItems().first().filter { it.category.equals(name, true) }.forEach { item ->
       db.financeDao().updateInventoryItem(item.copy(category = "Uncategorized", lastUpdatedMillis = System.currentTimeMillis()))
     }
   }

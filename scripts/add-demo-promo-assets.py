@@ -15,7 +15,10 @@ images = {
     "af_demo_tomatoes.jpg": "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?w=720&h=560&fit=crop&auto=format&q=82",
     "af_demo_onions.jpg": "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=720&h=560&fit=crop&auto=format&q=82",
     "af_demo_chicken.jpg": "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=720&h=560&fit=crop&auto=format&q=82",
-    "af_demo_bananas.jpg": "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=720&h=560&fit=crop&auto=format&q=82",
+    "af_demo_bananas.jpg": "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=720&h=560&fit=crop&fm=jpg&q=82",
+    "af_demo_bakery.jpg": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=720&h=560&fit=crop&fm=jpg&q=80",
+    "af_demo_dryfruits.jpg": "https://images.unsplash.com/photo-1608797178974-15b35a64ede9?w=720&h=560&fit=crop&fm=jpg&q=80",
+    "af_demo_spices.jpg": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=720&h=560&fit=crop&fm=jpg&q=80",
 }
 for name, url in images.items():
     target = res / name
