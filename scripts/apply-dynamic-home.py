@@ -316,7 +316,7 @@ p=root/'app/src/main/java/com/example/ui/screens/BusinessHomeScreen.kt'; p.write
 # Put trial/payment information on the mode-selection page, not regular Home pages.
 mode='app/src/main/java/com/example/ui/screens/PremiumModeSelectionScreen.kt'
 s=(root/mode).read_text(encoding='utf-8')
-s=s.replace('import com.example.data.model.AppMode\n','import com.example.data.model.AppMode\nimport com.example.data.model.SubscriptionState\nimport com.example.ui.components.SubscriptionAccessCard\n',1)
+s=s.replace('import com.example.data.model.*\n','import com.example.data.model.*\nimport com.example.ui.components.SubscriptionAccessCard\n',1)
 s=s.replace('''  onModeSelected: (AppMode) -> Unit,
   modifier: Modifier = Modifier
 ) {''','''  onModeSelected: (AppMode) -> Unit,
