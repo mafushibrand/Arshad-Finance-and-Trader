@@ -64,22 +64,8 @@ print("Added 27 additional retail demo products across all 10 Home departments."
 
 home_path = root / "app/src/main/java/com/example/ui/screens/BusinessHomeScreen.kt"
 home = home_path.read_text(encoding="utf-8")
-header = '''      item {
-        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-          visibleCategories.forEach { category ->
-            val emoji = categoryEmoji(category)
-            Card(onClick = { selectedCategory = category }, shape = RoundedCornerShape(18.dp),
-              colors = CardDefaults.cardColors(containerColor = StoreMint), modifier = Modifier.width(108.dp)) {
-              Column(Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                Text(emoji, fontSize = 30.sp)
-                Text(categoryLabel(category, urdu), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
-              }
-            }
-          }
-        }
-      }
-'''
-header_new = header + '''      item {
+button_anchor = '''      if (products.isEmpty()) {'''
+button_block = '''      item {
         OutlinedButton(onClick = onLoadDemoCatalog, modifier = Modifier.fillMaxWidth()) {
           Icon(Icons.Default.Storefront, null)
           Spacer(Modifier.width(8.dp))
@@ -87,11 +73,10 @@ header_new = header + '''      item {
         }
       }
 '''
-if header in home:
-    home = home.replace(header, header_new, 1)
+if button_anchor in home:
+    home = home.replace(button_anchor, button_block + button_anchor, 1)
 elif "Load sample products for all categories" not in home:
-    raise SystemExit("Home department chips anchor not found")
-
+    raise SystemExit("Home product-list insertion anchor not found")
 empty = '''      if (categoryItems.isEmpty()) item { Text(t("No products in this category yet. Add a product and choose this category.", "اس کیٹیگری میں ابھی پروڈکٹس نہیں۔ پروڈکٹ شامل کرتے وقت یہی کیٹیگری منتخب کریں۔"), color = MaterialTheme.colorScheme.onSurfaceVariant) }'''
 empty_new = '''      if (categoryItems.isEmpty()) item {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
