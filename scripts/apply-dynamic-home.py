@@ -30,8 +30,8 @@ replace('app/src/main/java/com/example/business/BusinessCore.kt',
     val current = dao.allRecords().filter { it.kind == "CATALOG_CATEGORY" && !it.archived }
     require(current.none { it.title.equals(clean, true) && !it.title.equals(oldName ?: "", true) }) { "Category already exists / کیٹیگری پہلے موجود ہے" }
     if (oldName != null) {
-      val old = current.firstOrNull { it.title.equals(oldName, true) } ?: error("Category not found / کیٹیگری نہیں ملی")
-      dao.update(old.copy(archived = true, updatedAt = System.currentTimeMillis()))
+      val old = current.firstOrNull { it.title.equals(oldName, true) }
+      if (old != null) dao.update(old.copy(archived = true, updatedAt = System.currentTimeMillis()))
       db.financeDao().getAllInventoryItems().first().filter { it.category.equals(oldName, true) }.forEach { item ->
         db.financeDao().updateInventoryItem(item.copy(category = clean, lastUpdatedMillis = System.currentTimeMillis()))
       }
@@ -170,7 +170,7 @@ fun BusinessHomeScreen(
       item {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
           Text(t("Categories", "کیٹیگریز"), modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
-          TextButton(onClick = { manageCategories = true }) { Text(t("Manage", "ترتیب دیں")) }
+          TextButton(onClick = { manageCategories = true }) { Text(t("Category settings", "کیٹیگری سیٹنگز")) }
         }
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
           visibleCategories.forEach { category ->
