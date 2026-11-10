@@ -163,8 +163,8 @@ jobs:
           s = p.read_text()
           replacements = {
               'applicationId = "com.aistudio.arshadfinance.v2stock"': 'applicationId = "com.aistudio.arshadfinance.v2stock.standalone5"',
-              'versionCode = 53': 'versionCode = 53',
-              'versionName = "4.6.7"': 'versionName = "4.6.7"',
+              'versionCode = 45': 'versionCode = 53',
+              'versionName = "4.6.0-plans"': 'versionName = "4.6.7"',
               'manifestPlaceholders["appLabel"] = "@string/app_name"': 'manifestPlaceholders["appLabel"] = "Arshad Finance"',
           }
           for before, after in replacements.items():
