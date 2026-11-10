@@ -205,6 +205,21 @@ jobs:
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/scripts/apply-dynamic-home.py" "$PROJECT_DIR"
 
+      - name: Archive final patched Android source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$PROJECT_DIR"
+          zip -qr "$GITHUB_WORKSPACE/ArshadFinance-4.6.5-final-source.zip" app/src/main/java app/src/main/res app/src/test app/build.gradle.kts settings.gradle.kts gradle/libs.versions.toml
+
+      - name: Upload final patched Android source
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArshadFinance-4.6.5-source
+          path: ArshadFinance-4.6.5-final-source.zip
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
