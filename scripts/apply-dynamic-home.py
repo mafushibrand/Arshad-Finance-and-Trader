@@ -349,7 +349,7 @@ s=s.replace(anchor,'''    SubscriptionAccessCard(subscriptionState, appLanguage,
 # Keep subscription/trial messaging exclusively on the second-page mode selector.
 settings_path = root/'app/src/main/java/com/example/ui/screens/PremiumSettingsScreen.kt'
 settings_text = settings_path.read_text(encoding='utf-8')
-settings_text = settings_text.replace('    item { com.example.ui.components.SubscriptionAccessCard(uiState.subscriptionState, uiState.appLanguage, onOpenTrialActivation) }\\n','',1)
+settings_text = settings_text.replace('    item { com.example.ui.components.SubscriptionAccessCard(uiState.subscriptionState, uiState.appLanguage, onOpenTrialActivation) }\n','',1)
 settings_path.write_text(settings_text,encoding='utf-8')
 
 access_test = root/'app/src/test/java/com/example/AccessDesignTest.kt'
