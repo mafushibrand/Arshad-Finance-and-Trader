@@ -330,6 +330,28 @@ s=s.replace(anchor,'''    SubscriptionAccessCard(subscriptionState, appLanguage,
     LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(16.dp)) {''',1)
 (root/mode).write_text(s,encoding='utf-8'); print('Moved trial/payment card onto mode-selection page')
 
+# Keep subscription/trial messaging exclusively on the second-page mode selector.
+settings_path = root/'app/src/main/java/com/example/ui/screens/PremiumSettingsScreen.kt'
+settings_text = settings_path.read_text(encoding='utf-8')
+settings_text = settings_text.replace('    item { com.example.ui.components.SubscriptionAccessCard(uiState.subscriptionState, uiState.appLanguage, onOpenTrialActivation) }\\n','',1)
+settings_path.write_text(settings_text,encoding='utf-8')
+
+access_test = root/'app/src/test/java/com/example/AccessDesignTest.kt'
+if access_test.exists():
+    at = access_test.read_text(encoding='utf-8')
+    at = at.replace(''' @Test fun plansVisibleAtTopOfSettings() {
+   var opened=false
+   compose.setContent {MyApplicationTheme {com.example.ui.screens.SettingsScreen(FinanceUiState(appLanguage=AppLanguage.ENGLISH),
+     onOpenShopProfile={},onOpenShopAccounts={},onOpenIndustryCatalog={},onLoadDemoData={},onResetData={},onOpenTrialActivation={opened=true})}}
+   compose.onNodeWithTag("subscription_access_card").assertIsDisplayed().performClick()
+   Assert.assertTrue(opened)
+ }''',''' @Test fun trialCardIsNotShownOnRegularSettingsPage() {
+   compose.setContent {MyApplicationTheme {com.example.ui.screens.SettingsScreen(FinanceUiState(appLanguage=AppLanguage.ENGLISH),
+     onOpenShopProfile={},onOpenShopAccounts={},onOpenIndustryCatalog={},onLoadDemoData={},onResetData={},onOpenTrialActivation={})}}
+   compose.onNodeWithTag("subscription_access_card").assertDoesNotExist()
+ }''')
+    access_test.write_text(at,encoding='utf-8')
+
 # Wire new callbacks and mode-selection trial card from MainActivity.
 main='app/src/main/java/com/example/MainActivity.kt'; s=(root/main).read_text(encoding='utf-8')
 s=s.replace('''        onModeSelected = { mode ->
