@@ -412,6 +412,34 @@ new='''      Sample("🥣 Sugar / چینی","Grocery","kg",145.0,175.0,100.0,"�
 if old not in s: raise SystemExit('Kiryana demo catalogue anchor not found')
 s=s.replace(old,new,1); (root/demo).write_text(s,encoding='utf-8'); print('Expanded starter store catalogue with fruit, vegetables, meat, bakery, dry fruits and spices')
 
+# Supermarket / cash-and-carry template gets the same real department coverage as a kiryana store.
+supermarket_old = '''      Sample("🥛 Fresh Milk / تازہ دودھ","Dairy","litre",180.0,220.0,30.0,"🥛"),
+      Sample("🥤 Mineral Water / منرل واٹر","Beverages","bottle",35.0,50.0,96.0,"🥤"),
+      Sample("🍪 Family Biscuits / بسکٹ","Snacks","pack",65.0,90.0,60.0,"🍪")'''
+supermarket_new = '''      Sample("🥛 Fresh Milk / تازہ دودھ","Dairy","litre",180.0,220.0,30.0,"🥛"),
+      Sample("🥤 Mineral Water / منرل واٹر","Beverages","bottle",35.0,50.0,96.0,"🥤"),
+      Sample("🍪 Family Biscuits / بسکٹ","Snacks","pack",65.0,90.0,60.0,"🍪"),
+      Sample("🌾 Basmati Rice / باسمتی چاول","Grocery","kg",250.0,310.0,80.0,"🌾"),
+      Sample("🍎 Fresh Apples / سیب","Fruit","kg",220.0,280.0,45.0,"🍎"),
+      Sample("🍌 Bananas / کیلے","Fruit","dozen",100.0,140.0,25.0,"🍌"),
+      Sample("🍅 Fresh Tomatoes / ٹماٹر","Vegetables","kg",85.0,112.5,40.0,"🍅"),
+      Sample("🧅 Red Onion / پیاز","Vegetables","kg",75.0,99.5,50.0,"🧅"),
+      Sample("🍗 Chicken Mince / چکن قیمہ","Meat","kg",350.0,424.5,15.0,"🍗"),
+      Sample("🥩 Beef / گائے کا گوشت","Meat","kg",900.0,1080.0,12.0,"🥩"),
+      Sample("🍞 Fresh Bread / ڈبل روٹی","Bakery","piece",90.0,120.0,24.0,"🍞"),
+      Sample("🎂 Chocolate Cake / چاکلیٹ کیک","Bakery","kg",900.0,1350.0,8.0,"🎂"),
+      Sample("🥜 Almonds / بادام","Dry Fruits","kg",1800.0,2200.0,10.0,"🥜"),
+      Sample("🌰 Pistachios / پستہ","Dry Fruits","kg",2600.0,3100.0,6.0,"🌰"),
+      Sample("🌶️ Red Chilli / لال مرچ","Spices","kg",650.0,820.0,18.0,"🌶️"),
+      Sample("🟡 Turmeric / ہلدی","Spices","kg",420.0,560.0,20.0,"🟡"),
+      Sample("🧴 Dishwashing Liquid / برتن دھونے کا لیکوئیڈ","Household","bottle",180.0,240.0,28.0,"🧴"),
+      Sample("🧻 Tissue Pack / ٹشو پیک","Household","pack",95.0,130.0,45.0,"🧻")'''
+if supermarket_old in s:
+    s=s.replace(supermarket_old,supermarket_new,1)
+elif "Sample(\"🍅 Fresh Tomatoes / ٹماٹر\",\"Vegetables\"" not in s:
+    raise SystemExit("Supermarket demo catalogue anchor missing")
+
+
 # Keep the trial card exclusively on mode selection; the existing header patch is disabled.
 main_path = root/'app/src/main/java/com/example/MainActivity.kt'
 main_text = main_path.read_text(encoding='utf-8').replace('showSubscriptionAccess = uiState.selectedTab == FinanceTab.HOME','showSubscriptionAccess = false',1)
