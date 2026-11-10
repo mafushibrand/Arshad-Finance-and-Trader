@@ -172,7 +172,7 @@ jobs:
                   raise SystemExit(f"Expected build setting not found: {before}")
               s = s.replace(before, after, 1)
           p.write_text(s)
-          print("Configured fresh standalone5 package, version 4.6.4")
+          print("Configured fresh standalone5 package, version 4.6.5")
           PY
 
       - name: Fix trial header and demo catalogue test failures
@@ -273,9 +273,9 @@ jobs:
             --ks-key-alias androiddebugkey \
             --v1-signing-enabled true --v2-signing-enabled true \
             --out "$PROJECT_DIR/dist/ArshadFinance-4.6.5.apk" "$APK"
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.6.4.apk" > "$PROJECT_DIR/dist/signature-check.txt"
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.6.4.apk" > "$PROJECT_DIR/dist/package-info.txt"
-          sha256sum "$PROJECT_DIR/dist/ArshadFinance-4.6.4.apk" > "$PROJECT_DIR/dist/SHA256SUMS.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.6.5.apk" > "$PROJECT_DIR/dist/signature-check.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.6.5.apk" > "$PROJECT_DIR/dist/package-info.txt"
+          sha256sum "$PROJECT_DIR/dist/ArshadFinance-4.6.5.apk" > "$PROJECT_DIR/dist/SHA256SUMS.txt"
           cat "$PROJECT_DIR/dist/signature-check.txt"
           head -n 3 "$PROJECT_DIR/dist/package-info.txt"
 
