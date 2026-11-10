@@ -179,7 +179,7 @@ fun BusinessHomeScreen(
               colors = CardDefaults.cardColors(containerColor = StoreMint), modifier = Modifier.width(108.dp)) {
               Column(Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(7.dp)) {
                 Text(emoji, fontSize = 30.sp)
-                Text(category, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(categoryLabel(category, urdu), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
               }
             }
           }
@@ -201,7 +201,7 @@ fun BusinessHomeScreen(
           item(key = "category-$category") {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
               Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(category, modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
+                Text(categoryLabel(category, urdu), modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
                 TextButton(onClick = { selectedCategory = category }) { Text(t("See All →", "سب دیکھیں ←")) }
               }
               Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -222,7 +222,7 @@ fun BusinessHomeScreen(
       item {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
           IconButton(onClick = { selectedCategory = null }) { Icon(Icons.Default.ArrowBack, t("Back", "واپس")) }
-          Text(selectedCategory!!, modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+          Text(categoryLabel(selectedCategory!!, urdu), modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
           TextButton(onClick = onAddProduct) { Text(t("+ Product", "+ پروڈکٹ")) }
         }
       }
@@ -255,7 +255,10 @@ private fun StoreProductCard(item: InventoryItem, currency: String, urdu: Boolea
   val details = remember(item.detailsJson) { runCatching { JSONObject(item.detailsJson) }.getOrDefault(JSONObject()) }
   val photo = details.optString("imageUri").takeIf { it.isNotBlank() }
   val demoPhoto = demoProductImage(item)
-  val title = if (urdu) details.optString("nameUrdu").ifBlank { item.name } else item.name
+  val rawName = item.name.substringAfter(" ", item.name)
+  val englishTitle = rawName.substringBefore(" / ").ifBlank { rawName }
+  val urduTitle = details.optString("nameUrdu").ifBlank { rawName.substringAfter(" / ", englishTitle) }
+  val title = if (urdu) urduTitle else englishTitle
   Card(modifier, shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), elevation = CardDefaults.cardElevation(2.dp)) {
     Column(Modifier.padding(9.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
       if (photo != null || demoPhoto != null) AsyncImage(model = photo ?: demoPhoto, contentDescription = title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxWidth().height(112.dp).clip(RoundedCornerShape(12.dp)))
@@ -264,7 +267,7 @@ private fun StoreProductCard(item: InventoryItem, currency: String, urdu: Boolea
       }
       Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
       Text(String.format(Locale.US, "%s %,.2f / %s", currency, item.salePrice, item.unit), color = StoreGreen, fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.bodyMedium)
-      Text(String.format(Locale.US, "Stock: %s %s", item.currentStock, item.unit), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+      Text(String.format(Locale.US, if (urdu) "اسٹاک: %s %s" else "Stock: %s %s", item.currentStock, item.unit), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
       Button(onClick = onAdd, enabled = item.currentStock > 0, modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 8.dp, vertical = 7.dp)) {
         Icon(Icons.Default.AddShoppingCart, null, modifier = Modifier.size(17.dp)); Spacer(Modifier.width(5.dp)); Text(if (urdu) "کارٹ میں شامل" else "Add to Cart", maxLines = 1)
       }
@@ -293,6 +296,19 @@ private fun demoProductImage(item: InventoryItem): Int? {
 private fun StoreShortcut(title: String, emoji: String, modifier: Modifier, onClick: () -> Unit) {
   Card(onClick = onClick, modifier = modifier, shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = StoreMint)) {
     Column(Modifier.fillMaxWidth().padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) { Text(emoji, fontSize = 24.sp); Text(title, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, maxLines = 1) }
+  }
+}
+
+private fun categoryLabel(name: String, urdu: Boolean): String {
+  if (!urdu) return name
+  return when (name.lowercase(Locale.ROOT)) {
+    "grocery" -> "کریانہ"; "household" -> "گھریلو اشیاء"; "bakery" -> "بیکری"; "cakes" -> "کیک"
+    "fruit" -> "پھل"; "vegetables" -> "سبزیاں"; "meat" -> "گوشت"; "seafood" -> "سمندری خوراک"
+    "dry fruits" -> "خشک میوہ جات"; "spices" -> "مصالحہ جات"; "dairy" -> "ڈیری"
+    "beverages" -> "مشروبات"; "snacks" -> "سنیکس"; "beauty" -> "بیوٹی"; "skincare" -> "جلد کی دیکھ بھال"
+    "clothing" -> "کپڑے"; "footwear" -> "جوتے"; "electronics" -> "الیکٹرانکس"
+    "computers" -> "کمپیوٹر"; "accessories" -> "لوازمات"; "uncategorized" -> "غیر درجہ بند"
+    else -> name
   }
 }
 
