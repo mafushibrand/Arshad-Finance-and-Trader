@@ -199,6 +199,12 @@ jobs:
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/scripts/add-demo-promo-assets.py" "$PROJECT_DIR"
 
+      - name: Build dynamic storefront and owner-managed catalogue
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/scripts/apply-dynamic-home.py" "$PROJECT_DIR"
+
       - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
