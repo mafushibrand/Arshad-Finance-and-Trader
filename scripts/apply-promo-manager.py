@@ -92,7 +92,7 @@ import java.util.UUID
  OutlinedTextField(urB,{urB=it},label={Text(t("Urdu button","اردو بٹن"))},modifier=Modifier.fillMaxWidth())
  Row(verticalAlignment=Alignment.CenterVertically){Text(t("SALE banner","سیل بینر"),Modifier.weight(1f));Switch(sale,{sale=it})}
  var menu by remember{mutableStateOf(false)}
- ExposedDropdownMenuBox(expanded=menu,onExpandedChange={menu=it}){OutlinedTextField(action,{},{readOnly=true,label={Text(t("Button action","بٹن کا عمل"))},modifier=Modifier.menuAnchor().fillMaxWidth(),trailingIcon={ExposedDropdownMenuDefaults.TrailingIcon(menu)});ExposedDropdownMenu(menu,{menu=false}){listOf("PRODUCTS","POS","SERVICES","KHATA").forEach{v->DropdownMenuItem(text={Text(v)},onClick={action=v;menu=false})}}}
+ ExposedDropdownMenuBox(expanded=menu,onExpandedChange={menu=it}){OutlinedTextField(value=action,onValueChange={},readOnly=true,label={Text(t("Button action","بٹن کا عمل"))},modifier=Modifier.menuAnchor().fillMaxWidth(),trailingIcon={ExposedDropdownMenuDefaults.TrailingIcon(menu)});ExposedDropdownMenu(expanded=menu,onDismissRequest={menu=false}){listOf("PRODUCTS","POS","SERVICES","KHATA").forEach{v->DropdownMenuItem(text={Text(v)},onClick={action=v;menu=false})}}}
  }},confirmButton={TextButton(onClick={val x=HomePromoSlideConfig(old?.id?:UUID.randomUUID().toString(),en,urT,sub,urS,btn,urB,image,sale,true,action);save(if(old==null)xs+x else xs.map{if(it.id==x.id)x else it});dialog=false}){Text(t("Save","محفوظ کریں"))}},dismissButton={TextButton(onClick={dialog=false}){Text(t("Cancel","منسوخ"))}})
 }
 ''')
