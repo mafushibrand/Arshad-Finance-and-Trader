@@ -163,8 +163,8 @@ jobs:
           s = p.read_text()
           replacements = {
               'applicationId = "com.aistudio.arshadfinance.v2stock"': 'applicationId = "com.aistudio.arshadfinance.v2stock.standalone5"',
-              'versionCode = 45': 'versionCode = 54',
-              'versionName = "4.6.0-plans"': 'versionName = "4.6.8"',
+              'versionCode = 45': 'versionCode = 55',
+              'versionName = "4.6.0-plans"': 'versionName = "4.6.9"',
               'manifestPlaceholders["appLabel"] = "@string/app_name"': 'manifestPlaceholders["appLabel"] = "Arshad Finance"',
           }
           for before, after in replacements.items():
@@ -172,7 +172,7 @@ jobs:
                   raise SystemExit(f"Expected build setting not found: {before}")
               s = s.replace(before, after, 1)
           p.write_text(s)
-          print("Configured fresh standalone5 package, version 4.6.8")
+          print("Configured fresh standalone5 package, version 4.6.9")
           PY
 
       - name: Fix trial header and demo catalogue test failures
@@ -234,13 +234,13 @@ jobs:
         run: |
           set -euo pipefail
           cd "$PROJECT_DIR"
-          zip -qr "$GITHUB_WORKSPACE/ArshadFinance-4.6.8-final-source.zip" app/src/main/java app/src/main/res app/src/test app/build.gradle.kts settings.gradle.kts gradle/libs.versions.toml
+          zip -qr "$GITHUB_WORKSPACE/ArshadFinance-4.6.9-final-source.zip" app/src/main/java app/src/main/res app/src/test app/build.gradle.kts settings.gradle.kts gradle/libs.versions.toml
 
       - name: Upload final patched Android source
         uses: actions/upload-artifact@v4
         with:
-          name: ArshadFinance-4.6.8-source
-          path: ArshadFinance-4.6.8-final-source.zip
+          name: ArshadFinance-4.6.9-source
+          path: ArshadFinance-4.6.9-final-source.zip
           if-no-files-found: error
           retention-days: 30
 
@@ -310,17 +310,17 @@ jobs:
             --ks-pass pass:android --key-pass pass:android \
             --ks-key-alias androiddebugkey \
             --v1-signing-enabled true --v2-signing-enabled true \
-            --out "$PROJECT_DIR/dist/ArshadFinance-4.6.8.apk" "$APK"
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.6.8.apk" > "$PROJECT_DIR/dist/signature-check.txt"
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.6.8.apk" > "$PROJECT_DIR/dist/package-info.txt"
-          sha256sum "$PROJECT_DIR/dist/ArshadFinance-4.6.8.apk" > "$PROJECT_DIR/dist/SHA256SUMS.txt"
+            --out "$PROJECT_DIR/dist/ArshadFinance-4.6.9.apk" "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.6.9.apk" > "$PROJECT_DIR/dist/signature-check.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.6.9.apk" > "$PROJECT_DIR/dist/package-info.txt"
+          sha256sum "$PROJECT_DIR/dist/ArshadFinance-4.6.9.apk" > "$PROJECT_DIR/dist/SHA256SUMS.txt"
           cat "$PROJECT_DIR/dist/signature-check.txt"
           head -n 3 "$PROJECT_DIR/dist/package-info.txt"
 
       - name: Upload verified APK
         uses: actions/upload-artifact@v4
         with:
-          name: ArshadFinance-4.6.8-APK
+          name: ArshadFinance-4.6.9-APK
           path: ${{ env.PROJECT_DIR }}/dist/
           if-no-files-found: error
           retention-days: 30
@@ -329,7 +329,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ArshadFinance-4.6.8-test-reports
+          name: ArshadFinance-4.6.9-test-reports
           path: |
             ${{ env.PROJECT_DIR }}/app/build/reports/tests/
             ${{ env.PROJECT_DIR }}/app/build/test-results/
