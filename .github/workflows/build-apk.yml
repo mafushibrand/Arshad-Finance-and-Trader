@@ -235,6 +235,12 @@ jobs:
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/scripts/apply-promo-manager.py" "$PROJECT_DIR"
 
+      - name: Correct Home slider and Urdu promo regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/scripts/fix-home-promo-regression-tests.py" "$PROJECT_DIR"
+
       - name: Archive final patched Android source
         shell: bash
         run: |
