@@ -223,6 +223,12 @@ jobs:
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/scripts/apply-demo-storefront-catalog.py" "$PROJECT_DIR"
 
+      - name: Add Home slider management, special offers, demo toggle and Catalog-only Services
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/scripts/apply-home-controls.py" "$PROJECT_DIR"
+
       - name: Archive final patched Android source
         shell: bash
         run: |
