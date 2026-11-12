@@ -34,6 +34,7 @@ if a<0 or z<0:raise SystemExit("Settings controls not found")
 W(p,s[:a]+s[z:])
 
 p=b/"ui/FinanceViewModel.kt";W(p,rep(R(p),"  SETTINGS;","  SETTINGS,\n  HOME_SLIDERS;"))
+p=b/"ui/FinanceViewModel.kt";s=R(p);s=rep(s,"  fun selectTab(tab: FinanceTab) {\n    if(_appMode.value==AppMode.PERSONAL_KHATA || !_subscriptionState.value.hasBusinessAccess) {","  fun selectTab(tab: FinanceTab) {\n    if (tab == FinanceTab.HOME_SLIDERS) { _selectedTab.value = tab; return }\n    if(_appMode.value==AppMode.PERSONAL_KHATA || !_subscriptionState.value.hasBusinessAccess) {");W(p,s)
 p=b/"ui/components/BottomNavBar.kt";s=R(p).replace("FinanceTab.PURCHASES, FinanceTab.OPERATIONS)","FinanceTab.PURCHASES, FinanceTab.OPERATIONS, FinanceTab.HOME_SLIDERS)")
 a='          MenuDestination("Settings", "سیٹنگز", Icons.Default.Settings, FinanceTab.SETTINGS, "nav_tab_settings", urdu) { sheet = ""; onTabSelected(FinanceTab.SETTINGS) }'
 W(p,rep(s,a,a+'\n          MenuDestination("Home sliders & demo", "ہوم سلائیڈرز اور ڈیمو", Icons.Default.ViewCarousel, FinanceTab.HOME_SLIDERS, "nav_home_sliders", urdu) { sheet = ""; onTabSelected(FinanceTab.HOME_SLIDERS) }'))
