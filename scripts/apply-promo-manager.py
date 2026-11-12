@@ -63,6 +63,7 @@ import com.example.data.model.AppLanguage
 import com.example.ui.FinanceUiState
 import com.example.ui.components.*
 import java.util.UUID
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable fun HomeSliderManagerScreen(state:FinanceUiState){
  val c=LocalContext.current;val ur=state.appLanguage==AppLanguage.URDU
  fun t(a:String,b:String)=if(ur)b else a
