@@ -1,10 +1,11 @@
 # ArshadFinance Master Handoff & Audit Register
 Updated: 2026-11-19
 Repository: https://github.com/mafushibrand/Arshad-Finance-and-Trader
-Current reviewed baseline: APK 4.7.0, versionCode 56, package com.aistudio.arshadfinance.v2stock.standalone5
-Baseline source artifact: ArshadFinance-4.7.0-source / ArshadFinance-4.7.0-final-source.zip
-Baseline APK SHA-256: c89f77fb6d3cbcfe4bde2692594856be2a7494e945b6d67f7fbccf197307d281
-Baseline build run: https://github.com/mafushibrand/Arshad-Finance-and-Trader/actions/runs/43181899850
+Current CI-verified build: APK 4.8.0, versionCode 57, package com.aistudio.arshadfinance.v2stock.standalone5
+Current source artifact: ArshadFinance-4.8.0-final-source.zip
+Current APK SHA-256: d060cf7528a00da79f60371eca1947e26ed20ff2ec619281d286ffdfb0a18745
+Current build run #112: https://github.com/mafushibrand/Arshad-Finance-and-Trader/actions/runs/44465735646
+Previous baseline: APK 4.7.0, versionCode 56; preserve it as the prior reference.
 
 ## Owner requirements — project constraints
 - Preserve the existing three months of work, all screens, business logic, records, and existing features.
@@ -18,16 +19,41 @@ Baseline build run: https://github.com/mafushibrand/Arshad-Finance-and-Trader/ac
 - Existing feature expectations: POS, sales, purchases, inventory/stock, customer/supplier, accounts, invoices, thermal receipts, product images, shop branding, demo catalogue, home sliders/promotions, trial/payment UX, reports, backup/restore.
 - Do not call a feature complete based only on compilation or unit tests; record manual device checks separately.
 
-## Latest CI baseline (not physical-device QA)
-Run #102: https://github.com/mafushibrand/Arshad-Finance-and-Trader/actions/runs/43181899850
-Prior run report indicated build, unit tests, signature/package verification, and artifact upload succeeded. Downloaded APK metadata confirms:
-- versionName 4.7.0; versionCode 56
+## Latest CI-verified build 4.8.0 (not physical-device QA)
+Run #112: https://github.com/mafushibrand/Arshad-Finance-and-Trader/actions/runs/44465735646
+Commit: 12c95b4d4fce94815aeb5bbb666e6d50e83dbde3
+All workflow steps completed successfully, including:
+- Khata ledger and global seasonal theme patch
+- final source archive creation/upload
+- Java 21, Android SDK and Gradle 9.3.1 setup
+- APK compilation
+- unit tests: 141 tests across 21 suites, 0 failures, 0 errors, 0 skipped
+- APK signature/package verification
+- APK and test-report artifact uploads
+Verified APK metadata:
+- versionName 4.8.0; versionCode 57
 - package com.aistudio.arshadfinance.v2stock.standalone5
 - min SDK 24 (Android 7.0); target SDK 34; compile SDK 36
-- APK signature schemes v2 and v3 verify
-- SHA-256: c89f77fb6d3cbcfe4bde2692594856be2a7494e945b6d67f7fbccf197307d281
-Physical installation, WhatsApp handoff, camera/gallery behavior, and full workflow QA remain unverified on a real phone.
-The APK is a debug build signed by the CI debug keystore, not a Play Store production release. Preserve signing continuity and do not publish a release until a private production keystore and secure backup are configured.
+- APK signature schemes v2 and v3 verify; one signer, CN=Arshad Finance, O=Arshad Finance, C=PK
+- APK SHA-256: d060cf7528a00da79f60371eca1947e26ed20ff2ec619281d286ffdfb0a18745
+- Artifact IDs: APK 14502810593; source 14500884402; test reports 14501963564
+- This is an installable debug/test APK, not a Play Store production release. The manifest dump reports application-debuggable. Keep the CI signing identity for test upgrades; configure a private production keystore separately before release.
+Khata enhancements present in source:
+- Khata overview includes To collect, Customers, Collected and Due bills metrics.
+- Customer search and All customers / To collect / Advance / All bills / Due bills filters.
+- Customer detail supports receive-cash entry, bill history, due amounts and WhatsApp statement sharing.
+- Existing advanced/legacy statement tools remain accessible; don't remove them.
+Theme enhancements present in source:
+- More > App theme & colors.
+- Presets: Modern Emerald, Pakistan Independence, Eid Celebration, Ramadan Night, Milad Green, Breast Cancer Awareness, Ocean Blue, Royal Violet, Warm Sunrise.
+- Custom 6-digit HEX primary color option.
+- Selected palette is persisted in app_theme SharedPreferences and applied through a global Material 3 color scheme.
+- Automated palette tests verify stable preset IDs, invalid-palette fallback and custom HEX handling.
+Remaining verification/quality work:
+- Static scan still finds 1,164 explicit Color(0x...) literals across 55 Kotlin files. Some are semantic colors, but many legacy screen/button colors are not yet fully tokenized. Do not claim every old component changes with the selected palette until the remaining hard-coded brand colors are migrated and visually checked.
+- Robolectric/Compose unit screenshot tests cover Khata in English and Urdu, plus business data safety invariants; they do not prove actual WhatsApp launch, physical Khata cash collection, or theme appearance across every device screen.
+- Real-device QA remains required: Khata receive cash and ledger balances; WhatsApp customer statement; switching each seasonal theme across Home, POS, Catalog, Khata, More, dialogs and buttons; thermal receipt image sharing.
+- The previous 4.7.0 APK remains a prior reference. Do not uninstall the original design02 package app to install standalone5.
 
 ## Source and build-system caveat
 The downloaded final-source artifact contains extracted app source and selected Gradle configuration but not the full original project root (notably AndroidManifest.xml, Gradle wrapper/root build files, and resources needed to validate provider wiring). The repository workflow reconstructs the build from the original source archive and applies scripts/*.py patch steps. Any source change must be made in the correct original source/patch layer and verified in resulting extracted source; editing only a generated file can be overwritten by the next CI run.
