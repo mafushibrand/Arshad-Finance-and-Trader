@@ -195,7 +195,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class AppThemePalettesTest {
-  @Test fun seasonalPalettesAreStable() {
+  @Test fun namedColorPalettesAreStable() {
     listOf("default","pakistan","eid","ramadan","milad","awareness","ocean","royal","sunrise").forEach {
       assertEquals(it,AppThemePalettes.get(it).id)
     }
