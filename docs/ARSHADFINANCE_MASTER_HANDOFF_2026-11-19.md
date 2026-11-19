@@ -121,3 +121,32 @@ Track each as Not started / In progress / Passed / Blocked, with commit, test ev
 - GitHub Actions run #116: https://github.com/mafushibrand/Arshad-Finance-and-Trader/actions/runs/44470346421
 - At handoff update time, workflow had completed all patching and was compiling the APK; unit tests, signature verification and artifact upload were still pending. Do not use 4.8.0 APK as if it contains the renamed labels.
 - The wider legacy hard-coded color migration is not marked complete; retain a dedicated visual audit to migrate only brand/action colors safely while preserving semantic colors (success, warning, expense, chart series).
+
+
+## User-requested Khata attachments and complete global theme audit — 2026-11-19
+Status: requirements confirmed; source inspection completed; implementation and new APK are NOT yet complete.
+Latest verified build remains 4.8.1 (run #116, commit 767a47f23ae654a82d69722bd1a1df37cea51e1a). It predates the newly requested attachment and full theme-token work. Do not describe it as containing these features.
+
+Inspected 4.8.1 extracted source:
+- Business Khata screen: PremiumBillingScreen.kt.
+- Customer create/edit: PremiumAddCustomerDialog.kt.
+- Customer detail/statement/cash receive: PremiumCustomerDetailDialog.kt.
+- Customer Room entity: data/model/Customer.kt; has detailsJson JSON field suitable for backward-compatible metadata such as photoUri and expanded profile description, avoiding a new column if feasible.
+- Existing customer detailsJson already stores openingBalance, creditLimit, CNIC and NTN. Any extension must preserve these keys and unknown JSON values.
+- Business Khata transaction/invoice receipt image support is separate from PERSONAL_KHATA. Do not conflate PersonalKhataScreen with customer/business Khata.
+- Transaction entity already has receiptImageUri, and AddTransactionDialog already has image-picker pattern. Business customer Khata needs a deliberate attachment flow for each relevant transaction/receipt, with stable persisted image storage (not transient picker URI only).
+- PersonalKhataEngine currently stores entries as BusinessRecord(kind=PERSONAL_ENTRY) with payload JSON containing direction only. Customer/contact profile is a BusinessRecord(kind=PERSONAL_CONTACT) with payload JSON containing phone. If user also expects personal Khata attachments, add metadata to payload JSON preserving existing direction/phone keys and retain existing balance calculations.
+- FinanceDatabase Room version is 8; avoid schema bump if existing JSON payload fields can safely carry the new optional metadata. If a schema change becomes necessary, provide explicit migration and backup/restore tests.
+- Theme code in latest source contains Material3 global scheme, but a scan finds 55 UI Kotlin files containing explicit Color(0x...) references and 550 literals in screen sources. Full theme consistency requires token migration; retain semantic colors for profit/loss, paid/due, warning/error, charts and financial status.
+- User confirmed that every Khata transaction should support a photo/receipt attachment in addition to customer photo. Customer image needs camera capture and gallery/document picker, persistent internal copy, preview, replace/edit and delete. Transaction attachment needs date/time, description/note, camera/gallery, persisted copy, preview, replace/delete, and linkage to the correct transaction. Add bilingual labels and tests.
+- Reference apps requested by user: Urdu Khata package com.wssolutions.urdkhata and DigiKhata package com.androidapp.digikhata. Treat their workflow patterns as inspiration; do not copy proprietary UI/assets/code.
+- Preserve all existing screens, features, customer rows, transactions, ledger calculations and data. No destructive migration or record deletion.
+Implementation checklist:
+[ ] Global theme tokens for sliders (text/background/button), sale badges, receipts, POS, catalog, Khata, dialogs, buttons and remaining screens.
+[ ] Customer profile photo upload + camera + persisted storage + preview + replace + delete.
+[ ] Per-Khata-transaction attachment + camera/gallery + persisted storage + preview + replace + delete.
+[ ] Customer/profile and transaction descriptions, date/time, history filters, Urdu/English labels.
+[ ] Unit/regression tests for legacy JSON preservation, balance calculations, attachment lifecycle, migration/backup, theme mapping.
+[ ] Build, tests, APK signature/package verification, source and test artifact upload.
+[ ] Physical-device QA: camera permission, gallery, storage lifecycle, transaction balance, WhatsApp share, theme across every screen.
+Progress at handoff: source inspection and implementation mapping complete; code changes for these newly requested items are not yet committed. Latest CI run #116 is successful for 4.8.1 only and does not include the new items.
