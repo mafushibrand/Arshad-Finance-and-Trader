@@ -118,4 +118,11 @@ test_target = root / "app/src/test/java/com/example/PersonalKhataAttachmentTest.
 test_target.parent.mkdir(parents=True, exist_ok=True)
 test_target.write_text(test_source.read_text(encoding="utf-8"), encoding="utf-8")
 
+
+design_test = root / "app/src/test/java/com/example/AccessDesignTest.kt"
+design_source = design_test.read_text(encoding="utf-8")
+design_source = design_source.replace("{_,_,_->}", "{_,_,_,_->}")
+design_source = design_source.replace("{_,_,_,_,_->}", "{_,_,_,_,_,_->}")
+design_test.write_text(design_source, encoding="utf-8")
+
 print("Applied additive Khata profile-photo and transaction-attachment metadata patches.")
