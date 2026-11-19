@@ -312,6 +312,25 @@ jobs:
           print("Replaced top-level non-composable MaterialTheme reads with stable palette constants.")
           PY
 
+      - name: Update Khata design tests for attachment callbacks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$PROJECT_DIR/app/src/test/java/com/example/AccessDesignTest.kt" <<'PY'
+          from pathlib import Path
+          import sys
+          p = Path(sys.argv[1])
+          s = p.read_text(encoding="utf-8")
+          s2 = s.replace("{_,_,_,_->},{_,_,_,_,_,_->}", "{_,_,_,_,_->},{_,_,_,_,_,_,_->}")
+          if s2 == s:
+              if "{_,_,_,_,_->},{_,_,_,_,_,_,_->}" not in s:
+                  raise SystemExit("Expected AccessDesignTest callback arguments not found")
+          else:
+              s = s2
+          p.write_text(s, encoding="utf-8")
+          print("Updated PersonalKhataScreen test callbacks to include completion handlers.")
+          PY
+
       - name: Archive final patched Android source
         shell: bash
         run: |
