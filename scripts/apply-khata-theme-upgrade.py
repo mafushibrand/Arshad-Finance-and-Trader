@@ -79,6 +79,7 @@ replace("app/src/main/java/com/example/ui/components/BottomNavBar.kt",
           MenuDestination("App theme & colors", "ایپ تھیم اور رنگ", Icons.Default.Palette, FinanceTab.THEME, "nav_app_theme", urdu) { sheet = ""; onTabSelected(FinanceTab.THEME) }""","More theme item")
 
 # Activity-level persisted theme means it applies before the first screen is drawn.
+replace("app/src/main/java/com/example/MainActivity.kt","import androidx.compose.material3.Scaffold","import androidx.compose.material3.MaterialTheme\nimport androidx.compose.material3.Scaffold","MaterialTheme import")
 replace("app/src/main/java/com/example/MainActivity.kt",
 """      MyApplicationTheme {
         FinanceApp(viewModel = viewModel)
