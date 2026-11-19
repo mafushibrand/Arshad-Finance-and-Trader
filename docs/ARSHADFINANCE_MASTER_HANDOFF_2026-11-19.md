@@ -34,10 +34,12 @@ The downloaded final-source artifact contains extracted app source and selected 
 Current assistant container has Java 21 but no installed Android SDK or Gradle executable/wrapper in the extracted artifact. Use GitHub Actions for reproducible builds unless a complete build environment is provisioned.
 
 ## Confirmed source-inspection findings requiring repair
-### Critical: fake OTP and password recovery
-- app/src/main/java/com/example/ui/screens/LoginScreen.kt: LegacyLoginScreen exposes fixed recovery PIN 7861, claims SMS/WhatsApp was sent without sending it, and accepts OTP 7861 OR any input of length >= 4.
-- app/src/main/java/com/example/ui/dialogs/AuthDialog.kt: OTP is generated locally, displayed in a toast/UI, and verification accepts generatedOtp OR any non-empty input. This is not real identity verification.
-- Do not simply remove login or lock users out. Replace demo simulation with server-side OTP/auth only after backend/provider configuration is available. Until then, clearly label demo mode and never claim SMS/WhatsApp OTP was sent. Password reset must require verified identity.
+### Critical: current workspace access and simulated OTP
+- app/src/main/java/com/example/ui/screens/PremiumLoginScreen.kt is the active LoginScreen wired by MainActivity. It is a local workspace setup/open flow; “Open existing workspace” invokes the local success callback without checking a password or server identity. The UI itself says workspace data is saved on this device.
+- app/src/main/java/com/example/ui/dialogs/AuthDialog.kt is wired from MainActivity/Settings. It generates OTP locally, displays it in a toast/UI, and verification accepts generatedOtp OR any non-empty input. It is not real SMS/WhatsApp verification.
+- app/src/main/java/com/example/ui/screens/LoginScreen.kt contains LegacyLoginScreen (not the active MainActivity entry route in the inspected source), with fixed recovery PIN 7861, false SMS/WhatsApp sent wording, and OTP acceptance of 7861 OR any input length >= 4. Do not mistake this legacy screen for the active entry screen.
+- app/build.gradle.kts has Firebase AI and App Check active, but Firestore and Firebase Auth dependencies are commented out. This supports the finding that server auth/cloud data sync are not currently integrated in this build configuration.
+- Do not simply remove login or lock existing owners out. Design a staged migration: preserve local workspace access for existing data, add genuine server-side account auth only after provider/backend configuration, then bind cloud workspaces to authenticated owners with tenant isolation. Until then, label local/demo verification honestly; never claim SMS/WhatsApp OTP was sent. Password reset must require verified identity.
 ### Branding screenshot mapped to existing implementation
 - app/src/main/java/com/example/ui/dialogs/PremiumShopProfileDialog.kt exposes business name, owner, phone, address, business type, tagline, logo emoji, invoice prefix, NTN, bank/payment details and tax configuration.
 - app/src/main/java/com/example/ui/dialogs/ShopProfileDialog.kt (legacy detailed profile) already has logoImageUri and bannerImageUri pickers. Preserve these.
