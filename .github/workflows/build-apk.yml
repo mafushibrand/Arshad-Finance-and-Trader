@@ -285,6 +285,33 @@ jobs:
           p.write_text(s)
           PY
 
+      - name: Fix non-composable MaterialTheme references in generated source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$PROJECT_DIR" <<'PY'
+          from pathlib import Path
+          import sys
+          root = Path(sys.argv[1])
+          p = root / "app/src/main/java/com/example/ui/components/BestForBusinessShowcase.kt"
+          s = p.read_text(encoding="utf-8")
+          fixes = {
+              "textColor = MaterialTheme.colorScheme.onSurface,": "textColor = Color(0xFF172C24),",
+              "bgGradientEnd = MaterialTheme.colorScheme.primary,": "bgGradientEnd = Color(0xFF166534),",
+              "bgGradientStart = MaterialTheme.colorScheme.onSurfaceVariant,": "bgGradientStart = Color(0xFF64748B),",
+              "bgGradientEnd = MaterialTheme.colorScheme.onSurfaceVariant,": "bgGradientEnd = Color(0xFF64748B),",
+          }
+          for old, new in fixes.items():
+              s = s.replace(old, new)
+          p.write_text(s, encoding="utf-8")
+          p = root / "app/src/main/java/com/example/ui/screens/PremiumInventoryScreen.kt"
+          s = p.read_text(encoding="utf-8")
+          s = s.replace("internal val Cream = MaterialTheme.colorScheme.surface", "internal val Cream = Color(0xFFFFFBF5)")
+          s = s.replace("internal val Forest = MaterialTheme.colorScheme.primary", "internal val Forest = Color(0xFF166534)")
+          p.write_text(s, encoding="utf-8")
+          print("Replaced top-level non-composable MaterialTheme reads with stable palette constants.")
+          PY
+
       - name: Archive final patched Android source
         shell: bash
         run: |
