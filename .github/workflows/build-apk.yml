@@ -259,6 +259,31 @@ jobs:
           set -euo pipefail
           base64 -d "$GITHUB_WORKSPACE/scripts/apply-khata-theme-and-profile-v2.py.gz.b64" | gzip -dc > "$GITHUB_WORKSPACE/scripts/apply-khata-theme-and-profile-v2.py"
           python3 "$GITHUB_WORKSPACE/scripts/apply-khata-theme-and-profile-v2.py" "$PROJECT_DIR"
+          python3 - "$PROJECT_DIR/app/src/main/java/com/example/ui/screens/PersonalKhataScreen.kt" <<'PY'
+          from pathlib import Path
+          import sys
+          p=Path(sys.argv[1]);s=p.read_text()
+          old='''  val context=LocalContext.current
+            fun acceptGallery(uri:Uri?,set:(String)->Unit){if(uri!=null)runCatching{copyKhataPhoto(context,uri)}.onSuccess(set).onFailure{error=it.localizedMessage ?: "Photo could not be saved"}}
+            val galleryPicker=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()){uri->acceptGallery(uri){setProfilePhoto(it)}}'''
+          new='''  val context=LocalContext.current
+            var pendingOldPhoto by remember {mutableStateOf("")}
+            fun setProfilePhoto(uri:String){if(personPhoto.isNotBlank() && personPhoto!=uri)pendingOldPhoto=personPhoto;personPhoto=uri}
+            fun acceptGallery(uri:Uri?,set:(String)->Unit){if(uri!=null)runCatching{copyKhataPhoto(context,uri)}.onSuccess(set).onFailure{error=it.localizedMessage ?: "Photo could not be saved"}}
+            val galleryPicker=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()){uri->acceptGallery(uri){setProfilePhoto(it)}}'''
+          if old in s:
+              s=s.replace(old,new,1)
+              s=s.replace('''  var pendingOldPhoto by remember {mutableStateOf("")}
+            fun setProfilePhoto(uri:String){if(personPhoto.isNotBlank() && personPhoto!=uri)pendingOldPhoto=personPhoto;personPhoto=uri}
+            fun done''','''  fun done''',1)
+          elif s.find('fun setProfilePhoto') < s.find('val galleryPicker'):
+              print("Khata profile photo callback order already fixed")
+          else:
+              raise SystemExit("Could not repair Khata photo callback declaration order")
+          s=s.replace('newPerson=true;editingPerson="";name=""','newPerson=true;editingPerson="";pendingOldPhoto="";name=""')
+          s=s.replace('personPhoto=avatar;editingPerson=person.id;error=""','personPhoto=avatar;editingPerson=person.id;pendingOldPhoto="";error=""')
+          p.write_text(s)
+          PY
 
       - name: Archive final patched Android source
         shell: bash
