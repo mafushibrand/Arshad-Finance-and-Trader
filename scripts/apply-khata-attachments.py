@@ -117,4 +117,5 @@ test_source = Path(__file__).resolve().parent.parent / "app/src/test/java/com/ex
 test_target = root / "app/src/test/java/com/example/PersonalKhataAttachmentTest.kt"
 test_target.parent.mkdir(parents=True, exist_ok=True)
 test_target.write_text(test_source.read_text(encoding="utf-8"), encoding="utf-8")
-\nprint("Applied additive Khata profile-photo and transaction-attachment metadata patches.")
+
+print("Applied additive Khata profile-photo and transaction-attachment metadata patches.")
