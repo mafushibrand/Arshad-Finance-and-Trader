@@ -32,7 +32,7 @@ fun ThemeSettingsScreen(state:FinanceUiState,selectedTheme:String,onSelectTheme:
       Card(colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.primaryContainer),shape=RoundedCornerShape(22.dp)) {
         Column(Modifier.fillMaxWidth().padding(18.dp),verticalArrangement=Arrangement.spacedBy(6.dp)) {
           Text(label("Your app, your colors","آپ کی ایپ، آپ کے پسندیدہ رنگ"),style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold,color=MaterialTheme.colorScheme.onPrimaryContainer)
-          Text(label("Choose a seasonal theme or create your own primary color. Your records and business data stay unchanged.","موسمی تھیم منتخب کریں یا اپنا بنیادی رنگ بنائیں۔ آپ کا کاروباری ڈیٹا اور ریکارڈ محفوظ رہیں گے۔"),color=MaterialTheme.colorScheme.onPrimaryContainer)
+          Text(label("Choose a color palette or create your own primary color. Your records and business data stay unchanged.","رنگوں کا انداز منتخب کریں یا اپنا بنیادی رنگ بنائیں۔ آپ کا کاروباری ڈیٹا اور ریکارڈ محفوظ رہیں گے۔"),color=MaterialTheme.colorScheme.onPrimaryContainer)
         }
       }
     }
