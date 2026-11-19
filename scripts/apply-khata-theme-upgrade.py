@@ -182,7 +182,7 @@ s=s.replace("color = Forest, maxLines = 2)","color = MaterialTheme.colorScheme.p
 p.write_text(s,encoding="utf-8")
 
 # Theme-aware page scaffold.
-replace("app/src/main/java/com/example/ui/screens/PremiumBillingScreen.kt","Column(modifier.fillMaxSize().background(Cream)) {","Column(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {")
+replace("app/src/main/java/com/example/ui/screens/PremiumBillingScreen.kt","Column(modifier.fillMaxSize().background(Cream)) {","Column(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {","Khata legacy background")
 
 # Unit coverage for palette IDs and custom hex parsing.
 test=root/"app/src/test/java/com/example/AppThemePalettesTest.kt"
