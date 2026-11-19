@@ -109,3 +109,15 @@ Track each as Not started / In progress / Passed / Blocked, with commit, test ev
 6. Install on a real device and capture evidence for affected flows.
 7. Upload APK, complete source, reports, changelog, commit SHA and run URL together.
 8. Do not mark blocked work complete. Do not remove existing features or user data.
+
+
+## Theme label refinement — 4.8.1 in CI
+- User explicitly requested visible theme labels to be actual color names, not occasion/campaign names such as Awareness, Eid, Milad, Pakistan Independence or Ramadan.
+- Preserved existing palette IDs (default, pakistan, eid, ramadan, milad, awareness, ocean, royal, sunrise) so previously saved user selections remain valid.
+- Visible English/Urdu labels now use color names: Emerald Green / زمردی سبز; Forest Green / گہرا جنگلی سبز; Teal Green / نیلگوں سبز; Indigo Blue / نیلگوں جامنی; Jade Green / یشمی سبز; Rose Pink / گلابی; Ocean Blue / سمندری نیلا; Royal Purple / شاہی جامنی; Amber Orange / عنبر نارنجی. Custom Color / اپنا منتخب رنگ.
+- Theme picker helper text now says color palette, not seasonal theme.
+- Regression test name changed from seasonal to named color palettes; persisted IDs unchanged.
+- Build version bumped to 4.8.1, versionCode 58.
+- GitHub Actions run #116: https://github.com/mafushibrand/Arshad-Finance-and-Trader/actions/runs/44470346421
+- At handoff update time, workflow had completed all patching and was compiling the APK; unit tests, signature verification and artifact upload were still pending. Do not use 4.8.0 APK as if it contains the renamed labels.
+- The wider legacy hard-coded color migration is not marked complete; retain a dedicated visual audit to migrate only brand/action colors safely while preserving semantic colors (success, warning, expense, chart series).
