@@ -1,0 +1,36 @@
+name: Publish Arshad Finance APK release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-apk-release.yml"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download already verified APK artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download 44501058984 --repo mafushibrand/Arshad-Finance-and-Trader --name ArshadFinance-4.8.2-APK --dir dist
+          test -s dist/ArshadFinance-4.8.2.apk
+          file dist/ArshadFinance-4.8.2.apk
+          sha256sum dist/ArshadFinance-4.8.2.apk
+
+      - name: Publish public GitHub Release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create v4.8.2 dist/ArshadFinance-4.8.2.apk \
+            --repo mafushibrand/Arshad-Finance-and-Trader \
+            --title "Arshad Finance 4.8.2" \
+            --notes "Verified APK build. SHA-256: de3b88fea5efa3084b08f7fbaa9da8178b5c2e5939c34c6979f446dad7ec47c6"
