@@ -55,4 +55,61 @@ patch("app/src/main/java/com/example/ui/dialogs/PremiumAddCustomerDialog.kt", [
 ''')
 ])
 # The personal ledger stores profile and attachment URIs in existing JSON payloads; Room schema/version remains unchanged.
+
+patch("app/src/main/java/com/example/ui/screens/PersonalKhataScreen.kt", [
+('import androidx.compose.foundation.layout.*\\n',
+ '''import androidx.compose.foundation.layout.*
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
+'''),
+('  addContact:(String,String,(String?)->Unit)->Unit,addEntry:(String,Double,String,String,(String?)->Unit)->Unit,onTheme:()->Unit = {}) {',
+ '  addContact:(String,String,String,(String?)->Unit)->Unit,addEntry:(String,Double,String,String,String,(String?)->Unit)->Unit,onTheme:()->Unit = {}) {'),
+('  var error by remember {mutableStateOf("")};var busy by remember {mutableStateOf(false)}\\n',
+ '''  var error by remember {mutableStateOf("")};var busy by remember {mutableStateOf(false)}
+  val context=LocalContext.current
+  var personPhoto by remember {mutableStateOf("")};var entryAttachment by remember {mutableStateOf("")}
+  val photoPicker=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()){uri->if(uri!=null){runCatching{context.contentResolver.takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION)};personPhoto=uri.toString()}}
+  val attachmentPicker=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()){uri->if(uri!=null){runCatching{context.contentResolver.takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION)};entryAttachment=uri.toString()}}
+'''),
+('  fun done(e:String?){busy=false;error=e ?: "";if(e==null){newPerson=false;selected="";value="";note="";name="";phone=""}}',
+ '  fun done(e:String?){busy=false;error=e ?: "";if(e==null){newPerson=false;selected="";value="";note="";name="";phone="";personPhoto="";entryAttachment=""}}'),
+('        Text(person.title,style=MaterialTheme.typography.titleLarge)\\n',
+ '''        val personPayload=runCatching{org.json.JSONObject(person.payload)}.getOrDefault(org.json.JSONObject())
+        val avatar=personPayload.optString("profilePhotoUri","")
+        Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)) {
+          if(avatar.isNotBlank()) AsyncImage(model=avatar,contentDescription=state.word("Person photo","شخص کی تصویر"),contentScale=ContentScale.Crop,modifier=Modifier.size(52.dp))
+          Text(person.title,style=MaterialTheme.typography.titleLarge)
+        }
+'''),
+('        state.businessRecords.filter {it.kind=="PERSONAL_ENTRY" && it.party==person.id}.take(5).forEach {entry->\\n          val gave=org.json.JSONObject(entry.payload).optString("direction")=="GAVE"\\n          Text(state.word(if(gave)"Gave " else "Received ",if(gave)"دیے " else "ملے ")+state.money(entry.amount)+" • "+entry.title)\\n        }',
+ '''        state.businessRecords.filter {it.kind=="PERSONAL_ENTRY" && it.party==person.id && !it.archived}.sortedByDescending{it.createdAt}.forEach {entry->
+          val payload=runCatching{org.json.JSONObject(entry.payload)}.getOrDefault(org.json.JSONObject())
+          val gave=payload.optString("direction")=="GAVE"
+          Column(Modifier.fillMaxWidth().padding(vertical=4.dp)) {
+            Text(state.word(if(gave)"Gave " else "Received ",if(gave)"دیے " else "ملے ")+state.money(entry.amount)+" • "+entry.title)
+            Text(java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a",java.util.Locale.getDefault()).format(java.util.Date(entry.createdAt)),style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+            val attachment=payload.optString("attachmentUri","")
+            if(attachment.isNotBlank()) AsyncImage(model=attachment,contentDescription=state.word("Transaction attachment","لین دین کی منسلک تصویر"),contentScale=ContentScale.Fit,modifier=Modifier.fillMaxWidth().heightIn(max=180.dp))
+          }
+        }'''),
+('  if(newPerson)BusinessForm(state.word("Add person","نام شامل کریں"),state.word("Save","محفوظ کریں"),{if(!busy)newPerson=false},{if(!busy){busy=true;addContact(name,phone,::done)}}) {\\n    BusinessField(name,state.word("Name","نام")){name=it};BusinessField(phone,state.word("Phone (optional)","فون (اختیاری)")){phone=it}\\n',
+ '''  if(newPerson)BusinessForm(state.word("Add person","نام شامل کریں"),state.word("Save","محفوظ کریں"),{if(!busy)newPerson=false},{if(!busy){busy=true;addContact(name,phone,personPhoto,::done)}}) {
+    if(personPhoto.isNotBlank()) AsyncImage(model=personPhoto,contentDescription=state.word("Profile photo","پروفائل تصویر"),contentScale=ContentScale.Crop,modifier=Modifier.size(76.dp))
+    OutlinedButton(onClick={photoPicker.launch(arrayOf("image/*"))}){Text(state.word("Add profile photo","پروفائل تصویر شامل کریں"))}
+    if(personPhoto.isNotBlank()) TextButton(onClick={personPhoto=""}){Text(state.word("Remove photo","تصویر ہٹائیں"))}
+    BusinessField(name,state.word("Name","نام")){name=it};BusinessField(phone,state.word("Phone (optional)","فون (اختیاری)")){phone=it}
+'''),
+('if(!busy){val n=value.toDoubleOrNull();if(n==null||!n.isFinite()||n<=0)error=state.word("Enter a valid amount","درست رقم درج کریں") else {busy=true;addEntry(selected,n,direction,note,::done)}}',
+ 'if(!busy){val n=value.toDoubleOrNull();if(n==null||!n.isFinite()||n<=0)error=state.word("Enter a valid amount","درست رقم درج کریں") else {busy=true;addEntry(selected,n,direction,note,entryAttachment,::done)}}'),
+('    BusinessField(value,state.word("Amount (Rs.)","رقم (روپے)"),true){value=it};BusinessField(note,state.word("Note (optional)","تفصیل (اختیاری)")){note=it}\\n',
+ '''    BusinessField(value,state.word("Amount (Rs.)","رقم (روپے)"),true){value=it};BusinessField(note,state.word("Note (optional)","تفصیل (اختیاری)")){note=it}
+    OutlinedButton(onClick={attachmentPicker.launch(arrayOf("image/*"))}){Text(state.word("Attach transaction photo / document","لین دین کی تصویر / دستاویز منسلک کریں"))}
+    if(entryAttachment.isNotBlank()) { AsyncImage(model=entryAttachment,contentDescription=state.word("Attachment preview","منسلک فائل کا پیش منظر"),contentScale=ContentScale.Fit,modifier=Modifier.fillMaxWidth().heightIn(max=180.dp));TextButton(onClick={entryAttachment=""}){Text(state.word("Remove attachment","منسلک فائل ہٹائیں"))} }
+''')
+])
+
 print("Applied additive Khata profile-photo and transaction-attachment metadata patches.")
