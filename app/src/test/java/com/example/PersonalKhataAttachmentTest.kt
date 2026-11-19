@@ -48,4 +48,25 @@ class PersonalKhataAttachmentTest {
       assertEquals(0.0, PersonalKhataEngine.balance(db.businessDao().allRecords(), contact.id), 0.000001)
     } finally { db.close() }
   }
+
+  @Test fun profileDescriptionCanBeEditedAndArchiveKeepsLedgerHistory() = runBlocking {
+    val db = Room.inMemoryDatabaseBuilder(context, FinanceDatabase::class.java)
+      .addCallback(BusinessSchema.callback).build()
+    try {
+      val engine = PersonalKhataEngine(db)
+      val person = engine.contact("Editable Person", "03000000000", "content://photo/one", "Initial note")
+      engine.entry(person.id, 250.0, "GAVE", "Opening advance", "", 1_700_000_000_000L)
+      engine.updateContact(person.id, "Updated Person", "03111111111", "content://photo/two", "Updated description")
+      val updated = db.businessDao().record(person.id)!!
+      val profile = JSONObject(updated.payload)
+      assertEquals("Updated Person", updated.title)
+      assertEquals("Updated description", profile.getString("description"))
+      assertEquals("content://photo/two", profile.getString("profilePhotoUri"))
+      val entry = db.businessDao().allRecords().single { it.kind == "PERSONAL_ENTRY" }
+      assertEquals(1_700_000_000_000L, entry.createdAt)
+      engine.archiveContact(person.id)
+      assertTrue(db.businessDao().record(person.id)!!.archived)
+      assertEquals(250.0, PersonalKhataEngine.balance(db.businessDao().allRecords(), person.id), 0.000001)
+    } finally { db.close() }
+  }
 }
