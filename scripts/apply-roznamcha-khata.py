@@ -151,8 +151,8 @@ private fun RoznamchaEntryForm(state:FinanceUiState,dismiss:()->Unit,save:(Doubl
 # Compose state must be declared in the composable body, not inside the lazy-list builder branch.
 if "var roznamchaPeriod by remember" not in s:
     s = s.replace('  var message by remember { mutableStateOf("") }',
-                  '  var message by remember { mutableStateOf("") }\\n  var roznamchaPeriod by remember { mutableStateOf("TODAY") }', 1)
-s = s.replace('        var period by remember { mutableStateOf("TODAY") }\\n','')
+                  '  var message by remember { mutableStateOf("") }' + chr(10) + '  var roznamchaPeriod by remember { mutableStateOf("TODAY") }', 1)
+s = s.replace('        var period by remember { mutableStateOf("TODAY") }','')
 s = s.replace('when(period)', 'when(roznamchaPeriod)')
 s = s.replace('period=="TODAY"', 'roznamchaPeriod=="TODAY"')
 s = s.replace('period=="MONTH"', 'roznamchaPeriod=="MONTH"')
