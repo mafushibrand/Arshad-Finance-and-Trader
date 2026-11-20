@@ -271,6 +271,7 @@ if "fun shareKhataStatement(" not in rs:
     Toast.makeText(context, "Khata image ready / کھاتے کی تصویر تیار ہے", Toast.LENGTH_SHORT).show()
   }
 '''
+    method = method.replace(r"\${", "${")
     rs = rs[:pos] + "\n" + method + rs[pos:]
     receipt.write_text(rs, encoding="utf-8")
 
