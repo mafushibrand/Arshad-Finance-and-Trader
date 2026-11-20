@@ -38,7 +38,14 @@ jobs:
         run: |
           set -euo pipefail
           SHA="$(sha256sum dist/ArshadFinance-4.9.0.apk | awk '{print $1}')"
-          gh release create v4.9.0 dist/ArshadFinance-4.9.0.apk \
-            --repo mafushibrand/Arshad-Finance-and-Trader \
-            --title "Arshad Finance 4.9.0" \
-            --notes "Verified APK build. SHA-256: $SHA"
+          if gh release view v4.9.0 --repo mafushibrand/Arshad-Finance-and-Trader >/dev/null 2>&1; then
+            gh release upload v4.9.0 dist/ArshadFinance-4.9.0.apk --clobber \
+              --repo mafushibrand/Arshad-Finance-and-Trader
+            gh release edit v4.9.0 --repo mafushibrand/Arshad-Finance-and-Trader \
+              --title "Arshad Finance 4.9.0" --notes "Updated verified Khata and Roznamcha build. SHA-256: $SHA"
+          else
+            gh release create v4.9.0 dist/ArshadFinance-4.9.0.apk \
+              --repo mafushibrand/Arshad-Finance-and-Trader \
+              --title "Arshad Finance 4.9.0" \
+              --notes "Verified APK build. SHA-256: $SHA"
+          fi
