@@ -151,14 +151,16 @@ private fun RoznamchaEntryForm(state:FinanceUiState,dismiss:()->Unit,save:(Doubl
 ui.write_text(s,encoding="utf-8")
 print("Roznamcha patch applied.")
 
-# Show the customer description that is already stored by the customer form,
-# and give the business customer Khata its own teal/violet visual accent.
+# Show the customer description already saved by the customer form and give
+# the business customer Khata a dedicated teal/violet palette.
 dialog = root / "app/src/main/java/com/example/ui/dialogs/PremiumCustomerDetailDialog.kt"
 d = dialog.read_text(encoding="utf-8")
 if "import androidx.compose.ui.graphics.Color" not in d:
-    d = d.replace("import androidx.compose.ui.Modifier\\n", "import androidx.compose.ui.Modifier\\nimport androidx.compose.ui.graphics.Color\\n", 1)
+    d = d.replace("import androidx.compose.ui.Modifier", "import androidx.compose.ui.Modifier\\nimport androidx.compose.ui.graphics.Color", 1)
+if "import org.json.JSONObject" not in d:
+    d = d.replace("import com.example.util.BusinessUtils", "import com.example.util.BusinessUtils\\nimport org.json.JSONObject", 1)
 if "val khataScheme = MaterialTheme.colorScheme.copy(" not in d:
-    anchor = "  val context = androidx.compose.ui.platform.LocalContext.current\\n"
+    anchor = "  val context = androidx.compose.ui.platform.LocalContext.current"
     theme = """  val khataScheme = MaterialTheme.colorScheme.copy(
     primary = Color(0xFF0F766E), secondary = Color(0xFF7C3AED),
     tertiary = Color(0xFFB45309), primaryContainer = Color(0xFFCCFBF1),
@@ -167,7 +169,7 @@ if "val khataScheme = MaterialTheme.colorScheme.copy(" not in d:
   val customerDescription = runCatching { JSONObject(customer.detailsJson).optString("description") }.getOrDefault("")
 """
     if anchor not in d: raise SystemExit("Customer detail context anchor missing")
-    d = d.replace(anchor, anchor + theme, 1)
+    d = d.replace(anchor, anchor + "\\n" + theme, 1)
     d = d.replace('  BusinessForm(label("Customer Khata", "گاہک کا کھاتہ"),',
                   '  MaterialTheme(colorScheme=khataScheme) { BusinessForm(label("Customer Khata", "گاہک کا کھاتہ"),', 1)
     needle = """      Spacer(Modifier.width(12.dp)); Column { Text(customer.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold); Text(customer.phone) }
