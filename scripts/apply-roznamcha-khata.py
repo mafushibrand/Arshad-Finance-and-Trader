@@ -172,7 +172,7 @@ if not any("val khataScheme = MaterialTheme.colorScheme.copy(" in line for line 
       '  val customerDescription = runCatching { JSONObject(customer.detailsJson).optString("description") }.getOrDefault("")'
     ]
     lines[pos+1:pos+1] = theme
-    d = "\\n".join(lines) + "\\n"
+    d = chr(10).join(lines) + chr(10)
     d = d.replace('  BusinessForm(label("Customer Khata", "گاہک کا کھاتہ"),',
                   '  MaterialTheme(colorScheme=khataScheme) { BusinessForm(label("Customer Khata", "گاہک کا کھاتہ"),', 1)
     lines = d.splitlines()
@@ -192,6 +192,6 @@ if not any("val khataScheme = MaterialTheme.colorScheme.copy(" in line for line 
     if lines[close-1].strip() != "}":
         raise SystemExit("Customer detail close brace anchor missing")
     lines[close-1] = "  } }"
-    d = "\\n".join(lines) + "\\n"
+    d = chr(10).join(lines) + chr(10)
     dialog.write_text(d, encoding="utf-8")
 print("Customer Khata description display and dedicated teal/violet styling applied.")
