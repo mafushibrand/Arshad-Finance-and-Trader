@@ -151,43 +151,47 @@ private fun RoznamchaEntryForm(state:FinanceUiState,dismiss:()->Unit,save:(Doubl
 ui.write_text(s,encoding="utf-8")
 print("Roznamcha patch applied.")
 
-# Show the customer description already saved by the customer form and give
-# the business customer Khata a dedicated teal/violet palette.
+# Show customer description and give business customer Khata its own accent.
 dialog = root / "app/src/main/java/com/example/ui/dialogs/PremiumCustomerDetailDialog.kt"
 d = dialog.read_text(encoding="utf-8")
-if "import androidx.compose.ui.graphics.Color" not in d:
-    d = d.replace("import androidx.compose.ui.Modifier", "import androidx.compose.ui.Modifier\\nimport androidx.compose.ui.graphics.Color", 1)
-if "import org.json.JSONObject" not in d:
-    d = d.replace("import com.example.util.BusinessUtils", "import com.example.util.BusinessUtils\\nimport org.json.JSONObject", 1)
-if "val khataScheme = MaterialTheme.colorScheme.copy(" not in d:
-    anchor = "  val context = androidx.compose.ui.platform.LocalContext.current"
-    theme = """  val khataScheme = MaterialTheme.colorScheme.copy(
-    primary = Color(0xFF0F766E), secondary = Color(0xFF7C3AED),
-    tertiary = Color(0xFFB45309), primaryContainer = Color(0xFFCCFBF1),
-    onPrimaryContainer = Color(0xFF134E4A)
-  )
-  val customerDescription = runCatching { JSONObject(customer.detailsJson).optString("description") }.getOrDefault("")
-"""
-    if anchor not in d: raise SystemExit("Customer detail context anchor missing")
-    d = d.replace(anchor, anchor + "\\n" + theme, 1)
+lines = d.splitlines()
+if not any("import androidx.compose.ui.graphics.Color" in line for line in lines):
+    pos = next(i for i,line in enumerate(lines) if line == "import androidx.compose.ui.Modifier")
+    lines.insert(pos+1, "import androidx.compose.ui.graphics.Color")
+if not any("import org.json.JSONObject" in line for line in lines):
+    pos = next(i for i,line in enumerate(lines) if line == "import com.example.util.BusinessUtils")
+    lines.insert(pos+1, "import org.json.JSONObject")
+if not any("val khataScheme = MaterialTheme.colorScheme.copy(" in line for line in lines):
+    pos = next(i for i,line in enumerate(lines) if "val context = androidx.compose.ui.platform.LocalContext.current" in line)
+    theme = [
+      "  val khataScheme = MaterialTheme.colorScheme.copy(",
+      "    primary = Color(0xFF0F766E), secondary = Color(0xFF7C3AED),",
+      "    tertiary = Color(0xFFB45309), primaryContainer = Color(0xFFCCFBF1),",
+      "    onPrimaryContainer = Color(0xFF134E4A)",
+      "  )",
+      '  val customerDescription = runCatching { JSONObject(customer.detailsJson).optString("description") }.getOrDefault("")'
+    ]
+    lines[pos+1:pos+1] = theme
+    d = "\\n".join(lines) + "\\n"
     d = d.replace('  BusinessForm(label("Customer Khata", "گاہک کا کھاتہ"),',
                   '  MaterialTheme(colorScheme=khataScheme) { BusinessForm(label("Customer Khata", "گاہک کا کھاتہ"),', 1)
-    needle = """      Spacer(Modifier.width(12.dp)); Column { Text(customer.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold); Text(customer.phone) }
-    }
-"""
-    replacement = needle + """    if (customerDescription.isNotBlank()) {
-      Surface(color=MaterialTheme.colorScheme.primaryContainer,shape=androidx.compose.foundation.shape.RoundedCornerShape(14.dp),modifier=Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(12.dp)) {
-          Text(label("Customer description","گاہک کی تفصیل"),style=MaterialTheme.typography.labelLarge,color=MaterialTheme.colorScheme.onPrimaryContainer)
-          Text(customerDescription,color=MaterialTheme.colorScheme.onPrimaryContainer)
-        }
-      }
-    }
-"""
-    if needle not in d: raise SystemExit("Customer detail profile row anchor missing")
-    d = d.replace(needle, replacement, 1)
-    close = "  }\\n  if (receive) AlertDialog"
-    if close not in d: raise SystemExit("Customer detail theme close anchor missing")
-    d = d.replace(close, "  } }\\n  if (receive) AlertDialog", 1)
+    lines = d.splitlines()
+    row = next(i for i,line in enumerate(lines) if "Spacer(Modifier.width(12.dp)); Column { Text(customer.name" in line)
+    insert = [
+      "    if (customerDescription.isNotBlank()) {",
+      "      Surface(color=MaterialTheme.colorScheme.primaryContainer,shape=androidx.compose.foundation.shape.RoundedCornerShape(14.dp),modifier=Modifier.fillMaxWidth()) {",
+      "        Column(Modifier.padding(12.dp)) {",
+      '          Text(label("Customer description","گاہک کی تفصیل"),style=MaterialTheme.typography.labelLarge,color=MaterialTheme.colorScheme.onPrimaryContainer)',
+      "          Text(customerDescription,color=MaterialTheme.colorScheme.onPrimaryContainer)",
+      "        }",
+      "      }",
+      "    }"
+    ]
+    lines[row+2:row+2] = insert
+    close = next(i for i,line in enumerate(lines) if "if (receive) AlertDialog" in line)
+    if lines[close-1].strip() != "}":
+        raise SystemExit("Customer detail close brace anchor missing")
+    lines[close-1] = "  } }"
+    d = "\\n".join(lines) + "\\n"
     dialog.write_text(d, encoding="utf-8")
 print("Customer Khata description display and dedicated teal/violet styling applied.")
