@@ -371,6 +371,7 @@ jobs:
               core.write_text(s,encoding="utf-8")
           ui=root/"app/src/main/java/com/example/ui/screens/BusinessOperationsScreen.kt"
           s=ui.read_text(encoding="utf-8")
+          s=s.replace("import androidx.compose.ui.Modifier\\n","import androidx.compose.ui.Modifier\\nimport androidx.compose.ui.graphics.Color\\n",1)
           s=s.replace('"JOB" to text("Jobs","جاب کارڈ"),','"ROZNAMCHA" to text("Roznamcha","روزنامچہ"),"JOB" to text("Jobs","جاب کارڈ"),',1)
           s=s.replace('section !in listOf("MOVEMENTS","AUDIT","UNITS","DEMO")','section !in listOf("MOVEMENTS","AUDIT","UNITS","DEMO")',1)
           s=s.replace('if(section=="PRODUCTION") text("Record production","پیداوار درج کریں") else text("Add ${sections[section]}","نیا ریکارڈ شامل کریں")','if(section=="PRODUCTION") text("Record production","پیداوار درج کریں") else if(section=="ROZNAMCHA") text("Add cash entry","نیا نقد اندراج") else text("Add ${sections[section]}","نیا ریکارڈ شامل کریں")',1)
