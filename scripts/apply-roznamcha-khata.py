@@ -207,3 +207,85 @@ if not any("val khataScheme = MaterialTheme.colorScheme.copy(" in line for line 
     d = chr(10).join(lines) + chr(10)
     dialog.write_text(d, encoding="utf-8")
 print("Customer Khata description display and dedicated teal/violet styling applied.")
+
+
+# Share the customer Khata statement as a real image attachment (not text-only).
+receipt = root / "app/src/main/java/com/example/util/ThermalReceiptImage.kt"
+rs = receipt.read_text(encoding="utf-8")
+if "fun shareKhataStatement(" not in rs:
+    marker = "\n}"
+    pos = rs.rfind(marker)
+    if pos < 0:
+        raise SystemExit("ThermalReceiptImage object closing brace not found")
+    method = r'''
+  /** Render and share a customer ledger statement as a PNG attachment. */
+  fun shareKhataStatement(context: Context, title: String, statement: String) {
+    val body = "$title\n\n$statement"
+    val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+      color = Color.rgb(28, 38, 34)
+      textSize = 27f
+      typeface = Typeface.create("sans-serif", Typeface.NORMAL)
+    }
+    val layout = StaticLayout.Builder.obtain(body, 0, body.length, paint, 632)
+      .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+      .setIncludePad(true)
+      .setLineSpacing(7f, 1f)
+      .build()
+    val bitmap = Bitmap.createBitmap(720, layout.height + 100, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    canvas.drawColor(Color.WHITE)
+    val accent = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(15, 118, 110) }
+    canvas.drawRect(0f, 0f, 720f, 16f, accent)
+    canvas.save()
+    canvas.translate(44f, 52f)
+    layout.draw(canvas)
+    canvas.restore()
+    val folder = File(context.cacheDir, "khata-whatsapp").apply { mkdirs() }
+    val image = File(folder, "Khata_\${System.currentTimeMillis()}.png")
+    try {
+      image.outputStream().use { output ->
+        check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)) { "Could not create Khata statement image" }
+      }
+    } finally {
+      bitmap.recycle()
+    }
+    val uri = FileProvider.getUriForFile(context, "\${context.packageName}.fileprovider", image)
+    val send = Intent(Intent.ACTION_SEND).apply {
+      type = "image/png"
+      putExtra(Intent.EXTRA_STREAM, uri)
+      clipData = android.content.ClipData.newUri(context.contentResolver, "Khata statement", uri)
+      addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+      addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    var shared = false
+    for (target in listOf("com.whatsapp", "com.whatsapp.w4b")) {
+      try {
+        context.startActivity(Intent(send).setPackage(target))
+        shared = true
+        break
+      } catch (_: ActivityNotFoundException) {
+      } catch (_: SecurityException) {
+      }
+    }
+    if (!shared) context.startActivity(Intent.createChooser(send, "Share Khata statement / کھاتے کی تفصیل شیئر کریں").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    Toast.makeText(context, "Khata image ready / کھاتے کی تصویر تیار ہے", Toast.LENGTH_SHORT).show()
+  }
+'''
+    rs = rs[:pos] + "\n" + method + rs[pos:]
+    receipt.write_text(rs, encoding="utf-8")
+
+dialog = root / "app/src/main/java/com/example/ui/dialogs/PremiumCustomerDetailDialog.kt"
+ds = dialog.read_text(encoding="utf-8")
+if "import com.example.util.ThermalReceiptImage" not in ds:
+    anchor = "import com.example.util.BusinessUtils"
+    if anchor not in ds:
+        raise SystemExit("BusinessUtils import not found in customer Khata dialog")
+    ds = ds.replace(anchor, anchor + "\nimport com.example.util.ThermalReceiptImage", 1)
+old_share = "BusinessUtils.shareWhatsAppMessage(context, customer.phone, statement)"
+new_share = 'ThermalReceiptImage.shareKhataStatement(context, label("Customer Khata Statement", "گاہک کے کھاتے کی تفصیل"), statement)'
+if old_share in ds:
+    ds = ds.replace(old_share, new_share, 1)
+elif new_share not in ds:
+    raise SystemExit("Customer Khata text-share call not found")
+dialog.write_text(ds, encoding="utf-8")
+print("Customer Khata WhatsApp share now sends a PNG image attachment.")
