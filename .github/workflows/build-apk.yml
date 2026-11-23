@@ -350,6 +350,13 @@ jobs:
           base64 -d "$GITHUB_WORKSPACE/scripts/apply-khata-ledgers-roznamcha.py.gz.b64" | gzip -dc > "$RUNNER_TEMP/apply-khata-ledgers-roznamcha.py"
           python3 "$RUNNER_TEMP/apply-khata-ledgers-roznamcha.py" "$PROJECT_DIR"
 
+      - name: Add on-device English to Urdu translation for Khata fields
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d "$GITHUB_WORKSPACE/scripts/apply-khata-urdu-translation.py.gz.b64" | gzip -dc > "$RUNNER_TEMP/apply-khata-urdu-translation.py"
+          python3 "$RUNNER_TEMP/apply-khata-urdu-translation.py" "$PROJECT_DIR"
+
       - name: Archive final patched Android source
         shell: bash
         run: |
