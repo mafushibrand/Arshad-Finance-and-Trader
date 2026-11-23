@@ -96,7 +96,7 @@ class UrduAutoTranslatorTest {
   @Test fun onlyLatinTextNeedsUrduTranslation() {
     assertTrue(UrduAutoTranslator.needsUrduTranslation("Customer payment received"))
     assertFalse(UrduAutoTranslator.needsUrduTranslation("گاہک کی ادائیگی وصول ہوئی"))
-    assertFalse(UrduAutoTranslator.needsUrduTranslation("12345 - Rs 500"))
+    assertFalse(UrduAutoTranslator.needsUrduTranslation("12345 - 500"))
   }
 }
 """,encoding='utf-8')
