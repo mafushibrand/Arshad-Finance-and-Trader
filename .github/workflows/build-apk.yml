@@ -337,6 +337,12 @@ jobs:
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/scripts/apply-roznamcha-khata.py" "$PROJECT_DIR"
 
+      - name: Add Roznamcha tab inside Personal Khata with cashbook and dated entries
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/scripts/apply-personal-khata-roznamcha.py" "$PROJECT_DIR"
+
       - name: Archive final patched Android source
         shell: bash
         run: |
