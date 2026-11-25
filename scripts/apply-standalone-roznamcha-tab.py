@@ -311,11 +311,11 @@ p.write_text(s,encoding="utf-8")
 p=root/"app/build.gradle.kts"
 s=p.read_text(encoding="utf-8")
 if 'versionName = "4.9.1"' in s and 'versionCode = 61' in s:
-  s=s.replace('versionCode = 61','versionCode = 63',1).replace('versionName = "4.9.1"','versionName = "4.9.3"',1)
-elif 'versionName = "4.9.3"' not in s:
+  s=s.replace('versionCode = 61','versionCode = 64',1).replace('versionName = "4.9.1"','versionName = "4.9.4"',1)
+elif 'versionName = "4.9.4"' not in s:
   raise SystemExit("Unexpected version metadata before 4.9.3 bump")
 p.write_text(s,encoding="utf-8")
-print("Applied 4.9.2 independent Roznamcha, Khata shortcut, party edit/delete plumbing, receipt sharing and feature toggle.")
+print("Applied standalone Roznamcha, upgraded Khata history, photo uploads and 4.9.4 build metadata.")
 
 
 
