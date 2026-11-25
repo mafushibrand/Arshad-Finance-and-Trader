@@ -366,7 +366,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          base64 -d "$GITHUB_WORKSPACE/scripts/apply-khata-history-upgrade.py.gz.b64" | gzip -dc > "$RUNNER_TEMP/apply-khata-history-upgrade.py"
+          base64 -d "$GITHUB_WORKSPACE/scripts/apply-khata-history-upgrade.py.gz" | gzip -dc > "$RUNNER_TEMP/apply-khata-history-upgrade.py"
           python3 "$RUNNER_TEMP/apply-khata-history-upgrade.py" "$PROJECT_DIR"
 
       - name: Archive final patched Android source
