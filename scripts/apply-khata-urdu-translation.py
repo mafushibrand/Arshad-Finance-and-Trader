@@ -55,11 +55,11 @@ new='''    else if(!translating) {
       translating=true
       translationScope.launch {
         try {
-          val savedName=if(urdu)UrduAutoTranslator.translateForLanguage(name,urdu)
-          val savedAddress=if(urdu)UrduAutoTranslator.translateForLanguage(address,urdu)
-          val savedDescription=if(urdu)UrduAutoTranslator.translateForLanguage(description,urdu)
-          val savedNote=if(urdu)UrduAutoTranslator.translateForLanguage(note,urdu)
-          val savedType=if(urdu)UrduAutoTranslator.translateForLanguage(type,urdu)
+          val savedName=UrduAutoTranslator.translateForLanguage(name,urdu)
+          val savedAddress=UrduAutoTranslator.translateForLanguage(address,urdu)
+          val savedDescription=UrduAutoTranslator.translateForLanguage(description,urdu)
+          val savedNote=UrduAutoTranslator.translateForLanguage(note,urdu)
+          val savedType=UrduAutoTranslator.translateForLanguage(type,urdu)
           metadata.put("openingBalance",opening.toDouble()).put("creditLimit",credit.toDouble()).put("cnic",cnic.trim()).put("ntn",ntn.trim()).put("profilePhotoUri",profilePhotoUri).put("description",savedDescription)
           onSaveCustomer((editingCustomer ?: Customer(name=savedName.trim())).copy(name=savedName.trim(),phone=phone.trim(),address=savedAddress.trim(),customerType=savedType.trim(),note=savedNote.trim(),detailsJson=metadata.toString()))
           if(originalPhotoUri.isNotBlank() && originalPhotoUri!=profilePhotoUri)removeOldPhoto(originalPhotoUri)
