@@ -362,50 +362,41 @@ jobs:
           set -euo pipefail
           python3 - "$PROJECT_DIR" <<'PY'
           from pathlib import Path
-          import sys
-          root = Path(sys.argv[1])
-          files = [
-              "app/src/main/java/com/example/ui/screens/PersonalKhataScreen.kt",
-              "app/src/main/java/com/example/ui/dialogs/PremiumAddCustomerDialog.kt",
-              "app/src/main/java/com/example/ui/screens/BusinessOperationsScreen.kt",
-              "app/src/main/java/com/example/ui/screens/PremiumBillingScreen.kt",
-          ]
-          for rel in files:
-              p = root / rel
-              s = p.read_text(encoding="utf-8")
-              s = s.replace("ActivityResultContracts.OpenDocument()", "ActivityResultContracts.GetContent()")
-              s = s.replace('galleryPicker.launch(arrayOf("image/*"))', 'galleryPicker.launch("image/*")')
-              s = s.replace('entryGallery.launch(arrayOf("image/*"))', 'entryGallery.launch("image/*")')
-              s = s.replace('photoPicker.launch(arrayOf("image/*"))', 'photoPicker.launch("image/*")')
-              s = s.replace("UrduAutoTranslator.translateOrOriginal(", "UrduAutoTranslator.translateForLanguage(")
-              p.write_text(s, encoding="utf-8")
-          p = root / "app/src/main/java/com/example/ui/screens/PremiumBillingScreen.kt"
-          k = p.read_text(encoding="utf-8")
-          k = k.replace('  onAddRoznamcha: (Double,TransactionType,Long,String,String) -> Unit = {_,_,_,_,_->},\n', '')
-          k = k.replace('  var khataTab by remember { mutableStateOf("CUSTOMERS") }\n', '')
-          k = k.replace('  var showRoznamchaForm by remember { mutableStateOf(false) }\n', '')
-          k = k.replace('  var roznamchaPeriod by rememberSaveable { mutableStateOf("TODAY") }\n', '')
-          k = re.sub(r'    item \\{ Row\\(Modifier\\.fillMaxWidth\\(\\),horizontalArrangement=Arrangement\\.spacedBy\\(10\\.dp\\)\\) \\{\\n      FilterChip\\(selected=khataTab=="CUSTOMERS".*?\\n    \\} \\}\\n', '', k, count=1, flags=re.S)
-          k = k.replace('''    modifier, if(khataTab=="ROZNAMCHA") uiState.word("Add cash entry", "نقد اندراج شامل کریں") else uiState.word("Add customer", "نیا گاہک"),
+          import sys, re
+          root=Path(sys.argv[1])
+          for rel in ["app/src/main/java/com/example/ui/screens/PersonalKhataScreen.kt","app/src/main/java/com/example/ui/dialogs/PremiumAddCustomerDialog.kt","app/src/main/java/com/example/ui/screens/BusinessOperationsScreen.kt"]:
+              p=root/rel
+              t=p.read_text(encoding="utf-8")
+              t=t.replace("ActivityResultContracts.OpenDocument()","ActivityResultContracts.GetContent()")
+              t=t.replace('galleryPicker.launch(arrayOf("image/*"))','galleryPicker.launch("image/*")').replace('entryGallery.launch(arrayOf("image/*"))','entryGallery.launch("image/*")').replace('photoPicker.launch(arrayOf("image/*"))','photoPicker.launch("image/*")')
+              t=t.replace("UrduAutoTranslator.translateOrOriginal(","UrduAutoTranslator.translateForLanguage(")
+              p.write_text(t,encoding="utf-8")
+          p=root/"app/src/main/java/com/example/ui/screens/PremiumBillingScreen.kt"
+          t=p.read_text(encoding="utf-8")
+          for line in ['  onAddRoznamcha: (Double,TransactionType,Long,String,String) -> Unit = {_,_,_,_,_->},\n','  var khataTab by remember { mutableStateOf("CUSTOMERS") }\n','  var showRoznamchaForm by remember { mutableStateOf(false) }\n','  var roznamchaPeriod by rememberSaveable { mutableStateOf("TODAY") }\n']:
+              t=t.replace(line,"")
+          t=re.sub(r'  val roznamchaRows = .*?\n  val monthKey = .*?\n  val visibleRoznamcha = .*?\n  val cashIn = .*?\n  val cashOut = .*?\n','',t,count=1,flags=re.S)
+          t=re.sub(r'    item \{ Row\(Modifier\.fillMaxWidth\(\),horizontalArrangement=Arrangement\.spacedBy\(10\.dp\)\) \{\n      FilterChip\(selected=khataTab=="CUSTOMERS".*?\n    \} \}\n','',t,count=1,flags=re.S)
+          old='''    modifier, if(khataTab=="ROZNAMCHA") uiState.word("Add cash entry", "نقد اندراج شامل کریں") else uiState.word("Add customer", "نیا گاہک"),
     { if(khataTab=="ROZNAMCHA") {roznamchaAccount=uiState.accounts.firstOrNull()?.name ?: "";roznamchaError="";showRoznamchaForm=true} else onOpenAddCustomer() },
-    footer = { if(khataTab=="ROZNAMCHA") {''', '''    modifier, uiState.word("Add customer", "نیا گاہک"),
+    footer = { if(khataTab=="ROZNAMCHA") {'''
+          new='''    modifier, uiState.word("Add customer", "نیا گاہک"),
     { onOpenAddCustomer() },
-    footer = { Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {''')
-          a = k.find('    if(khataTab=="ROZNAMCHA") {')
-          b = k.find('    } else {\n    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {', a)
-          if a >= 0 and b >= 0:
-              k = k[:a] + '    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {' + k[b+len('    } else {\n    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {'):]
-          k = k.replace('    item { AdvancedButton(uiState) { advanced = true } }\n    }\n  }\n  if(showRoznamchaForm) BusinessForm', '    item { AdvancedButton(uiState) { advanced = true } }\n  }\n  if(showRoznamchaForm) BusinessForm', 1)
-          a = k.find('  if(showRoznamchaForm) BusinessForm(')
-          if a >= 0: k = k[:a] + '}\n'
-          p.write_text(k, encoding="utf-8")
-          p = root / "app/src/main/java/com/example/MainActivity.kt"
-          k = p.read_text(encoding="utf-8")
-          import re
-          k = re.sub(r'^\s*onAddRoznamcha = .*?\n\s*,\n', '', k, count=1, flags=re.M)
-          p.write_text(k, encoding="utf-8")
-          print("Khata Gallery picker now copies selected images into app storage; Roznamcha remains a separate module.")
-          PY
+    footer = { Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {'''
+          t=t.replace(old,new,1)
+          a=t.find('    if(khataTab=="ROZNAMCHA") {')
+          b=t.find('    } else {\n    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {',a)
+          if a>=0 and b>=0:t=t[:a]+'    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {'+t[b+len('    } else {\n    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {'):]
+          t=t.replace('    item { AdvancedButton(uiState) { advanced = true } }\n    }\n  }\n  if(showRoznamchaForm) BusinessForm','    item { AdvancedButton(uiState) { advanced = true } }\n  }\n  if(showRoznamchaForm) BusinessForm',1)
+          a=t.find('  if(showRoznamchaForm) BusinessForm(')
+          if a>=0:t=t[:a]+'}\n'
+          p.write_text(t,encoding="utf-8")
+          p=root/"app/src/main/java/com/example/MainActivity.kt"
+          t=p.read_text(encoding="utf-8")
+          t=re.sub(r'^\s*onAddRoznamcha = .*?\n\s*,\n','',t,count=1,flags=re.M)
+          p.write_text(t,encoding="utf-8")
+          print("Khata and Roznamcha are separate; image selection and Urdu translation updated.")
+          PYY
 
       - name: Archive final patched Android source
         shell: bash
