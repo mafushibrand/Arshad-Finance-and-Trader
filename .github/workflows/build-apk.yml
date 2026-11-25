@@ -291,7 +291,7 @@ jobs:
           set -euo pipefail
           python3 - "$PROJECT_DIR" <<'PY'
           from pathlib import Path
-          import sys
+          import sys, re
           root = Path(sys.argv[1])
           p = root / "app/src/main/java/com/example/ui/components/BestForBusinessShowcase.kt"
           s = p.read_text(encoding="utf-8")
@@ -385,8 +385,7 @@ jobs:
           k = k.replace('  var khataTab by remember { mutableStateOf("CUSTOMERS") }\n', '')
           k = k.replace('  var showRoznamchaForm by remember { mutableStateOf(false) }\n', '')
           k = k.replace('  var roznamchaPeriod by rememberSaveable { mutableStateOf("TODAY") }\n', '')
-          k = k.replace('''    item { Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)) {
-      FilterChip(selected=khataTab=="CUSTOMERS",''', '')
+          k = re.sub(r'    item \\{ Row\\(Modifier\\.fillMaxWidth\\(\\),horizontalArrangement=Arrangement\\.spacedBy\\(10\\.dp\\)\\) \\{\\n      FilterChip\\(selected=khataTab=="CUSTOMERS".*?\\n    \\} \\}\\n', '', k, count=1, flags=re.S)
           k = k.replace('''    modifier, if(khataTab=="ROZNAMCHA") uiState.word("Add cash entry", "نقد اندراج شامل کریں") else uiState.word("Add customer", "نیا گاہک"),
     { if(khataTab=="ROZNAMCHA") {roznamchaAccount=uiState.accounts.firstOrNull()?.name ?: "";roznamchaError="";showRoznamchaForm=true} else onOpenAddCustomer() },
     footer = { if(khataTab=="ROZNAMCHA") {''', '''    modifier, uiState.word("Add customer", "نیا گاہک"),
