@@ -246,35 +246,7 @@ if "fun updateTransaction(transaction: Transaction)" not in s:
   s=s.replace(anchor,code+anchor,1)
 p.write_text(s,encoding="utf-8")
 
-# Khata remains the customer ledger and opens the independent Roznamcha tab.
-p=root/"app/src/main/java/com/example/ui/screens/PremiumBillingScreen.kt"
-s=p.read_text(encoding="utf-8")
-if "onOpenRoznamcha: () -> Unit = {}" not in s:
-  anchor = '  onOpenAddProduct: () -> Unit = {},\n'
-  if anchor not in s: raise SystemExit("PremiumBillingScreen parameter anchor missing")
-  s = s.replace(anchor, anchor + '  onOpenRoznamcha: () -> Unit = {},\n', 1)
-s=s.replace('''  PremiumPage(uiState.word("Khata & customers", "کھاتہ اور گاہک"), uiState.word("Customer ledger and daily cashbook", "گاہکوں کا کھاتہ اور روزانہ نقد کتاب"), Icons.Default.ReceiptLong,''',
-'''  PremiumPage(uiState.word("Khata & customers", "کھاتہ اور گاہک"), uiState.word("Customer and supplier ledger", "گاہکوں اور سپلائرز کا کھاتہ"), Icons.Default.ReceiptLong,''',1)
-s=s.replace('''      FilterChip(selected=khataTab=="ROZNAMCHA",onClick={khataTab="ROZNAMCHA";search=""},label={Text(uiState.word("Roznamcha", "روزنامچہ"))},modifier=Modifier.weight(1f).testTag("khata_roznamcha_tab"),leadingIcon={Icon(Icons.Default.MenuBook,null)})
-''','',1)
-s=s.replace('''    } }
-    if(khataTab=="ROZNAMCHA") {''','''    } }
-    item { OutlinedButton(onClick=onOpenRoznamcha,modifier=Modifier.fillMaxWidth().testTag("khata_open_roznamcha")) { Icon(Icons.Default.MenuBook,null); Spacer(Modifier.width(8.dp)); Text(uiState.word("Open separate Roznamcha","الگ روزنامچہ کھولیں")) } }
-    if(khataTab=="ROZNAMCHA") {''',1)
-s=s.replace('''      PremiumButton(uiState.word("New bill", "نیا بل"), onOpenAddInvoice, modifier = Modifier.weight(1f))
-''','''      PremiumButton(uiState.word("New bill", "نیا بل"), onOpenAddInvoice, modifier = Modifier.weight(1f))
-      PremiumButton(uiState.word("Roznamcha", "روزنامچہ"), onOpenRoznamcha, modifier = Modifier.weight(1f).testTag("khata_roznamcha_add"))
-''',1)
-p.write_text(s,encoding="utf-8")
-
-p=root/"app/src/main/java/com/example/MainActivity.kt"
-s=p.read_text(encoding="utf-8")
-if "onOpenRoznamcha = { viewModel.selectTab(FinanceTab.ROZNAMCHA) }" not in s:
-  anchor='            onOpenAddProduct = { viewModel.openAddInventoryDialog() },\\n'
-  if anchor not in s: raise SystemExit("MainActivity BillingScreen callback anchor missing")
-  s=s.replace(anchor,anchor+'            onOpenRoznamcha = { viewModel.selectTab(FinanceTab.ROZNAMCHA) },\\n',1)
-
-p.write_text(s,encoding="utf-8")
+# Roznamcha is a standalone module only; no shortcut, tab, or button inside Khata.
 
 # Always-visible customer receipt image action, in addition to statement sharing.
 p=root/"app/src/main/java/com/example/ui/dialogs/PremiumCustomerDetailDialog.kt"
