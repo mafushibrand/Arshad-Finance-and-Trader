@@ -356,24 +356,31 @@ jobs:
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/scripts/apply-khata-urdu-translation.py" "$PROJECT_DIR"
 
-      - name: Add standalone Roznamcha navigation and bump 4.9.3 build
+      - name: Add standalone Roznamcha navigation and bump 4.9.4 build
         shell: bash
         run: |
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/scripts/apply-standalone-roznamcha-tab.py" "$PROJECT_DIR"
+
+      - name: Separate Roznamcha and upgrade Khata history, receipts and screenshot uploads
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d "$GITHUB_WORKSPACE/scripts/apply-khata-history-upgrade.py.gz.b64" | gzip -dc > "$RUNNER_TEMP/apply-khata-history-upgrade.py"
+          python3 "$RUNNER_TEMP/apply-khata-history-upgrade.py" "$PROJECT_DIR"
 
       - name: Archive final patched Android source
         shell: bash
         run: |
           set -euo pipefail
           cd "$PROJECT_DIR"
-          zip -qr "$GITHUB_WORKSPACE/ArshadFinance-4.9.3-final-source.zip" app/src/main/java app/src/main/res app/src/test app/build.gradle.kts settings.gradle.kts gradle/libs.versions.toml
+          zip -qr "$GITHUB_WORKSPACE/ArshadFinance-4.9.4-final-source.zip" app/src/main/java app/src/main/res app/src/test app/build.gradle.kts settings.gradle.kts gradle/libs.versions.toml
 
       - name: Upload final patched Android source
         uses: actions/upload-artifact@v4
         with:
-          name: ArshadFinance-4.9.3-source
-          path: ArshadFinance-4.9.3-final-source.zip
+          name: ArshadFinance-4.9.4-source
+          path: ArshadFinance-4.9.4-final-source.zip
           if-no-files-found: error
           retention-days: 30
 
@@ -443,17 +450,17 @@ jobs:
             --ks-pass pass:android --key-pass pass:android \
             --ks-key-alias androiddebugkey \
             --v1-signing-enabled true --v2-signing-enabled true \
-            --out "$PROJECT_DIR/dist/ArshadFinance-4.9.3.apk" "$APK"
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.9.3.apk" > "$PROJECT_DIR/dist/signature-check.txt"
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.9.3.apk" > "$PROJECT_DIR/dist/package-info.txt"
-          (cd "$PROJECT_DIR/dist" && sha256sum "ArshadFinance-4.9.3.apk" > "SHA256SUMS.txt")
+            --out "$PROJECT_DIR/dist/ArshadFinance-4.9.4.apk" "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.9.4.apk" > "$PROJECT_DIR/dist/signature-check.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.9.4.apk" > "$PROJECT_DIR/dist/package-info.txt"
+          (cd "$PROJECT_DIR/dist" && sha256sum "ArshadFinance-4.9.4.apk" > "SHA256SUMS.txt")
           cat "$PROJECT_DIR/dist/signature-check.txt"
           head -n 3 "$PROJECT_DIR/dist/package-info.txt"
 
       - name: Upload verified APK
         uses: actions/upload-artifact@v4
         with:
-          name: ArshadFinance-4.9.3-APK
+          name: ArshadFinance-4.9.4-APK
           path: ${{ env.PROJECT_DIR }}/dist/
           if-no-files-found: error
           retention-days: 30
@@ -462,7 +469,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ArshadFinance-4.9.3-test-reports
+          name: ArshadFinance-4.9.4-test-reports
           path: |
             ${{ env.PROJECT_DIR }}/app/build/reports/tests/
             ${{ env.PROJECT_DIR }}/app/build/test-results/
