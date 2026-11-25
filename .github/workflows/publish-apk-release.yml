@@ -26,10 +26,10 @@ jobs:
             RUN_ID="$(gh run list --repo mafushibrand/Arshad-Finance-and-Trader --workflow build-apk.yml --limit 10 --json databaseId,conclusion --jq '.[] | select(.conclusion == "success") | .databaseId' | head -n 1)"
           fi
           test -n "$RUN_ID"
-          gh run download "$RUN_ID" --repo mafushibrand/Arshad-Finance-and-Trader --name ArshadFinance-4.9.3-APK --dir dist
-          test -s dist/ArshadFinance-4.9.3.apk
+          gh run download "$RUN_ID" --repo mafushibrand/Arshad-Finance-and-Trader --name ArshadFinance-4.9.4-APK --dir dist
+          test -s dist/ArshadFinance-4.9.4.apk
           (cd dist && sha256sum -c SHA256SUMS.txt)
-          file dist/ArshadFinance-4.9.3.apk
+          file dist/ArshadFinance-4.9.4.apk
 
       - name: Publish public GitHub Release asset
         env:
@@ -37,15 +37,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SHA="$(sha256sum dist/ArshadFinance-4.9.3.apk | awk '{print $1}')"
-          if gh release view v4.9.3 --repo mafushibrand/Arshad-Finance-and-Trader >/dev/null 2>&1; then
-            gh release upload v4.9.3 dist/ArshadFinance-4.9.3.apk --clobber \
+          SHA="$(sha256sum dist/ArshadFinance-4.9.4.apk | awk '{print $1}')"
+          if gh release view v4.9.4 --repo mafushibrand/Arshad-Finance-and-Trader >/dev/null 2>&1; then
+            gh release upload v4.9.4 dist/ArshadFinance-4.9.4.apk --clobber \
               --repo mafushibrand/Arshad-Finance-and-Trader
-            gh release edit v4.9.3 --repo mafushibrand/Arshad-Finance-and-Trader \
-              --title "Arshad Finance 4.9.3" --notes "Updated verified Khata and Roznamcha build. SHA-256: $SHA"
+            gh release edit v4.9.4 --repo mafushibrand/Arshad-Finance-and-Trader \
+              --title "Arshad Finance 4.9.4" --notes "Updated verified Khata and Roznamcha build. SHA-256: $SHA"
           else
-            gh release create v4.9.3 dist/ArshadFinance-4.9.3.apk \
+            gh release create v4.9.4 dist/ArshadFinance-4.9.4.apk \
               --repo mafushibrand/Arshad-Finance-and-Trader \
-              --title "Arshad Finance 4.9.3" \
+              --title "Arshad Finance 4.9.4" \
               --notes "Verified APK build. SHA-256: $SHA"
           fi
