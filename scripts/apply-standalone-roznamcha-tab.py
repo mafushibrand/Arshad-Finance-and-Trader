@@ -1,5 +1,6 @@
 from pathlib import Path
 import sys
+import re
 
 root=Path(sys.argv[1])
 
