@@ -74,8 +74,8 @@ if "nav_more_roznamcha" not in s:
 p=root/"app/build.gradle.kts"
 s=p.read_text(encoding="utf-8")
 if 'versionCode = 61' not in s:
-    if 'versionCode = 60' not in s or 'versionName = "4.9.0"' not in s:
-        raise SystemExit("Expected 4.9.0 version metadata missing; refusing unsafe bump")
-    s=s.replace('versionCode = 60','versionCode = 61',1).replace('versionName = "4.9.0"','versionName = "4.9.1"',1)
+    if 'versionCode = 60' not in s or 'versionName = "4.9.1"' not in s:
+        raise SystemExit("Expected workflow-set 4.9.1 metadata missing; refusing unsafe bump")
+    s=s.replace('versionCode = 60','versionCode = 61',1)
     p.write_text(s,encoding="utf-8")
 print("Set version 4.9.1 / code 61. Package and cached CI signing identity remain unchanged.")
