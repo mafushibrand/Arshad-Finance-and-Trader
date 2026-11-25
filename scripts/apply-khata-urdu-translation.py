@@ -71,21 +71,7 @@ if 'if(translating) LinearProgressIndicator' not in s:
     s=s.replace('    Text(label("A clear khata for every customer", "ہر گاہک کے لیے صاف کھاتہ"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)\n','    Text(label("A clear khata for every customer", "ہر گاہک کے لیے صاف کھاتہ"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)\n    if(translating) LinearProgressIndicator(Modifier.fillMaxWidth())\n',1)
 p.write_text(s,encoding='utf-8')
 
-p=root/'app/src/main/java/com/example/ui/screens/PremiumBillingScreen.kt'
-s=p.read_text(encoding='utf-8')
-if 'import com.example.util.UrduAutoTranslator' not in s:
-    s=s.replace('import com.example.data.model.*','import com.example.data.model.*\nimport com.example.util.UrduAutoTranslator\nimport kotlinx.coroutines.launch',1)
-if 'val translationScope = rememberCoroutineScope()' not in s:
-    s=s.replace('  var roznamchaError by rememberSaveable { mutableStateOf("") }\n','  var roznamchaError by rememberSaveable { mutableStateOf("") }\n  var translating by remember { mutableStateOf(false) }\n  val translationScope = rememberCoroutineScope()\n',1)
-old='''      else -> { onAddRoznamcha(amount,roznamchaDirection,date,roznamchaNote.trim(),roznamchaAccount);showRoznamchaForm=false;roznamchaAmount="";roznamchaNote="";roznamchaError="" }
-'''
-new='''      else -> { if(!translating) { translating=true;translationScope.launch { try { val savedNote=if(uiState.appLanguage==AppLanguage.URDU)UrduAutoTranslator.englishToUrdu(roznamchaNote) else roznamchaNote.trim();onAddRoznamcha(amount,roznamchaDirection,date,savedNote,roznamchaAccount);showRoznamchaForm=false;roznamchaAmount="";roznamchaNote="";roznamchaError="" } catch(failure:Exception) {roznamchaError=failure.message ?: uiState.word("Translation failed","ترجمہ ناکام ہو گیا")} finally {translating=false} } } }
-'''
-if old in s:s=s.replace(old,new,1)
-elif 'val savedNote=if(uiState.appLanguage' not in s:raise SystemExit('Roznamcha save anchor missing')
-if 'if(translating) LinearProgressIndicator' not in s:
-    s=s.replace('    BusinessField(roznamchaNote,uiState.word("Description / note","تفصیل / نوٹ")){roznamchaNote=it}\n','    BusinessField(roznamchaNote,uiState.word("Description / note","تفصیل / نوٹ")){roznamchaNote=it}\n    if(translating) LinearProgressIndicator(Modifier.fillMaxWidth())\n',1)
-p.write_text(s,encoding='utf-8')
+# Roznamcha is standalone in BusinessOperationsScreen; never wire it into Khata.
 
 t=root/'app/src/test/java/com/example/UrduAutoTranslatorTest.kt'
 t.write_text("""package com.example
