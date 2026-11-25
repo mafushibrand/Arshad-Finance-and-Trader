@@ -179,7 +179,10 @@ s=s.replace('''  var incoming by remember { mutableStateOf(true) }
   var note by remember { mutableStateOf("") }
   var dateText by remember { mutableStateOf(SimpleDateFormat("yyyy-MM-dd",Locale.US).format(Date())) }
   var accountId by remember { mutableStateOf(state.accounts.firstOrNull()?.id ?: 0L) }
-''','''  var incoming by remember(initial?.id) { mutableStateOf(initial?.type!=TransactionType.EXPENSE) }
+''','''  val urdu=state.appLanguage==AppLanguage.URDU
+  val translationScope=rememberCoroutineScope()
+  var translating by remember { mutableStateOf(false) }
+  var incoming by remember(initial?.id) { mutableStateOf(initial?.type!=TransactionType.EXPENSE) }
   var amount by remember(initial?.id) { mutableStateOf(initial?.amount?.toString() ?: "") }
   var party by remember(initial?.id) { mutableStateOf(initial?.recipientInfo ?: "") }
   var note by remember(initial?.id) { mutableStateOf(initial?.note ?: "") }
@@ -190,10 +193,20 @@ s=s.replace('''  BusinessForm(t("Roznamcha entry","روزنامچہ اندراج
 ''','''  BusinessForm(if(initial==null)t("Roznamcha entry","روزنامچہ اندراج") else t("Edit Roznamcha entry","روزنامچہ اندراج تبدیل کریں"),t("Save entry","اندراج محفوظ کریں"),dismiss,{
 ''',1)
 s=s.replace('''      else -> save(value,incoming,date,note,accountId)
-''','''      else -> save(value,incoming,date,note,accountId,party.trim())
+''','''      else -> if(!translating) {
+        translating=true
+        translationScope.launch {
+          try {
+            val savedParty=UrduAutoTranslator.translateOrOriginal(party.trim(),urdu)
+            val savedNote=UrduAutoTranslator.translateOrOriginal(note.trim(),urdu)
+            save(value,incoming,date,savedNote,accountId,savedParty)
+          } finally { translating=false }
+        }
+      }
 ''',1)
 s=s.replace('''    BusinessField(amount,t("Amount (Rs.)","رقم (روپے)"),true){amount=it}
     BusinessField(note,t("Description / detail","تفصیل / وضاحت")){note=it}
+    if(translating) LinearProgressIndicator(Modifier.fillMaxWidth())
 ''','''    BusinessField(amount,t("Amount (Rs.)","رقم (روپے)"),true){amount=it}
     BusinessField(party,t("Client / Party","گاہک / فریق")){party=it}
     BusinessField(note,t("Description / detail","تفصیل / وضاحت")){note=it}
