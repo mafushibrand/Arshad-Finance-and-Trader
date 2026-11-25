@@ -20,17 +20,21 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 object UrduAutoTranslator {
   fun needsUrduTranslation(value:String):Boolean = value.any { it in 'A'..'Z' || it in 'a'..'z' }
-  suspend fun englishToUrdu(value:String):String {
+  suspend fun translateForLanguage(value:String,targetUrdu:Boolean):String {
     val input=value.trim()
-    if(input.isBlank() || !needsUrduTranslation(input)) return value
-    val translator=Translation.getClient(TranslatorOptions.Builder().setSourceLanguage(TranslateLanguage.ENGLISH).setTargetLanguage(TranslateLanguage.URDU).build())
+    if(input.isBlank()) return value
+    val source=if(targetUrdu) TranslateLanguage.ENGLISH else TranslateLanguage.URDU
+    val target=if(targetUrdu) TranslateLanguage.URDU else TranslateLanguage.ENGLISH
+    val translator=Translation.getClient(TranslatorOptions.Builder().setSourceLanguage(source).setTargetLanguage(target).build())
     try {
       translator.downloadModelIfNeeded(DownloadConditions.Builder().build()).awaitResult()
       return translator.translate(input).awaitResult()
     } catch(error:Exception) {
-      throw IllegalStateException("Urdu model needs one internet download; after that translation works offline. / اردو ماڈل پہلی مرتبہ انٹرنیٹ سے ڈاؤن لوڈ ہوگا، پھر آف لائن کام کرے گا۔",error)
+      throw IllegalStateException("Translation model needs one internet download; after that it can work offline. / ترجمے کا ماڈل پہلی مرتبہ انٹرنیٹ سے ڈاؤن لوڈ ہوگا، پھر آف لائن بھی کام کر سکتا ہے۔",error)
     } finally { translator.close() }
   }
+  suspend fun englishToUrdu(value:String):String = translateForLanguage(value,true)
+  suspend fun urduToEnglish(value:String):String = translateForLanguage(value,false)
   private suspend fun <T> Task<T>.awaitResult():T = suspendCancellableCoroutine { c ->
     addOnSuccessListener { if(c.isActive) c.resume(it) }
     addOnFailureListener { if(c.isActive) c.resumeWithException(it) }
@@ -51,11 +55,11 @@ new='''    else if(!translating) {
       translating=true
       translationScope.launch {
         try {
-          val savedName=if(urdu)UrduAutoTranslator.englishToUrdu(name) else name.trim()
-          val savedAddress=if(urdu)UrduAutoTranslator.englishToUrdu(address) else address.trim()
-          val savedDescription=if(urdu)UrduAutoTranslator.englishToUrdu(description) else description.trim()
-          val savedNote=if(urdu)UrduAutoTranslator.englishToUrdu(note) else note.trim()
-          val savedType=if(urdu)UrduAutoTranslator.englishToUrdu(type) else type.trim()
+          val savedName=if(urdu)UrduAutoTranslator.translateForLanguage(name,urdu)
+          val savedAddress=if(urdu)UrduAutoTranslator.translateForLanguage(address,urdu)
+          val savedDescription=if(urdu)UrduAutoTranslator.translateForLanguage(description,urdu)
+          val savedNote=if(urdu)UrduAutoTranslator.translateForLanguage(note,urdu)
+          val savedType=if(urdu)UrduAutoTranslator.translateForLanguage(type,urdu)
           metadata.put("openingBalance",opening.toDouble()).put("creditLimit",credit.toDouble()).put("cnic",cnic.trim()).put("ntn",ntn.trim()).put("profilePhotoUri",profilePhotoUri).put("description",savedDescription)
           onSaveCustomer((editingCustomer ?: Customer(name=savedName.trim())).copy(name=savedName.trim(),phone=phone.trim(),address=savedAddress.trim(),customerType=savedType.trim(),note=savedNote.trim(),detailsJson=metadata.toString()))
           if(originalPhotoUri.isNotBlank() && originalPhotoUri!=profilePhotoUri)removeOldPhoto(originalPhotoUri)
