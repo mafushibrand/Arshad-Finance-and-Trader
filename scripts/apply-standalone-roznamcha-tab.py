@@ -249,10 +249,10 @@ p.write_text(s,encoding="utf-8")
 # Khata remains the customer ledger and opens the independent Roznamcha tab.
 p=root/"app/src/main/java/com/example/ui/screens/PremiumBillingScreen.kt"
 s=p.read_text(encoding="utf-8")
-s=s.replace('''  onAddRoznamcha: (Double,TransactionType,Long,String,String) -> Unit = {_,_,_,_,_->},
-''','''  onAddRoznamcha: (Double,TransactionType,Long,String,String) -> Unit = {_,_,_,_,_->},
-  onOpenRoznamcha: () -> Unit = {},
-''',1)
+if "onOpenRoznamcha: () -> Unit = {}" not in s:
+  anchor = '  onOpenAddProduct: () -> Unit = {},\n'
+  if anchor not in s: raise SystemExit("PremiumBillingScreen parameter anchor missing")
+  s = s.replace(anchor, anchor + '  onOpenRoznamcha: () -> Unit = {},\n', 1)
 s=s.replace('''  PremiumPage(uiState.word("Khata & customers", "کھاتہ اور گاہک"), uiState.word("Customer ledger and daily cashbook", "گاہکوں کا کھاتہ اور روزانہ نقد کتاب"), Icons.Default.ReceiptLong,''',
 '''  PremiumPage(uiState.word("Khata & customers", "کھاتہ اور گاہک"), uiState.word("Customer and supplier ledger", "گاہکوں اور سپلائرز کا کھاتہ"), Icons.Default.ReceiptLong,''',1)
 s=s.replace('''      FilterChip(selected=khataTab=="ROZNAMCHA",onClick={khataTab="ROZNAMCHA";search=""},label={Text(uiState.word("Roznamcha", "روزنامچہ"))},modifier=Modifier.weight(1f).testTag("khata_roznamcha_tab"),leadingIcon={Icon(Icons.Default.MenuBook,null)})
@@ -270,9 +270,10 @@ p.write_text(s,encoding="utf-8")
 p=root/"app/src/main/java/com/example/MainActivity.kt"
 s=p.read_text(encoding="utf-8")
 if "onOpenRoznamcha = { viewModel.selectTab(FinanceTab.ROZNAMCHA) }" not in s:
-  anchor='''            onAddRoznamcha = { amount,type,date,note,account -> viewModel.addTransaction(if(type==TransactionType.INCOME) "Cash In / وصولی" else "Cash Out / ادائیگی",amount,type,"Roznamcha",if(type==TransactionType.INCOME) "💰" else "🧾",account,note,dateMillis=date) }
-'''
-  if anchor in s: s=s.replace(anchor,anchor.rstrip("\\n")+',\\n            onOpenRoznamcha = { viewModel.selectTab(FinanceTab.ROZNAMCHA) }\\n',1)
+  anchor='            onOpenAddProduct = { viewModel.openAddInventoryDialog() },\\n'
+  if anchor not in s: raise SystemExit("MainActivity BillingScreen callback anchor missing")
+  s=s.replace(anchor,anchor+'            onOpenRoznamcha = { viewModel.selectTab(FinanceTab.ROZNAMCHA) },\\n',1)
+
 p.write_text(s,encoding="utf-8")
 
 # Always-visible customer receipt image action, in addition to statement sharing.
