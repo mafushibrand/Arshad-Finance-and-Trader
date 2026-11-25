@@ -140,7 +140,7 @@ s=s.replace('''  var selected by remember { mutableStateOf<BusinessRecord?>(null
   var deletingRoznamcha by remember { mutableStateOf<Transaction?>(null) }
   var message by remember { mutableStateOf("") }
 ''',1)
-row_pattern=r'          ListTile\\(if\\(incoming\\)text\\("Cash received".*?\\n            controls=\\{Text\\(.*?\\)\\}\\)'
+row_pattern=r'          ListTile\(if\(incoming\)text\("Cash received".*?\n            controls=\{Text\(.*?\)\}\)'
 row_match=re.search(row_pattern,s,re.S)
 if row_match and "editingRoznamcha=tx" not in row_match.group(0):
   newrow='''          ListTile(if(incoming)text("Cash received","نقد وصولی") else text("Cash paid","نقد ادائیگی"),
