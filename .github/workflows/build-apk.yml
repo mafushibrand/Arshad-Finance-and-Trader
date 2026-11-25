@@ -381,22 +381,22 @@ jobs:
               p.write_text(s, encoding="utf-8")
           p = root / "app/src/main/java/com/example/ui/screens/PremiumBillingScreen.kt"
           k = p.read_text(encoding="utf-8")
-          k = k.replace('  onAddRoznamcha: (Double,TransactionType,Long,String,String) -> Unit = {_,_,_,_,_->},\\n', '')
-          k = k.replace('  var khataTab by remember { mutableStateOf("CUSTOMERS") }\\n', '')
-          k = k.replace('  var showRoznamchaForm by remember { mutableStateOf(false) }\\n', '')
-          k = k.replace('  var roznamchaPeriod by rememberSaveable { mutableStateOf("TODAY") }\\n', '')
+          k = k.replace('  onAddRoznamcha: (Double,TransactionType,Long,String,String) -> Unit = {_,_,_,_,_->},\n', '')
+          k = k.replace('  var khataTab by remember { mutableStateOf("CUSTOMERS") }\n', '')
+          k = k.replace('  var showRoznamchaForm by remember { mutableStateOf(false) }\n', '')
+          k = k.replace('  var roznamchaPeriod by rememberSaveable { mutableStateOf("TODAY") }\n', '')
           a = k.find('    if(khataTab=="ROZNAMCHA") {')
-          b = k.find('    } else {\\n    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {', a)
+          b = k.find('    } else {\n    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {', a)
           if a >= 0 and b >= 0:
-              k = k[:a] + '    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {' + k[b+len('    } else {\\n    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {'):]
-          k = k.replace('    item { AdvancedButton(uiState) { advanced = true } }\\n    }\\n  }\\n  if(showRoznamchaForm) BusinessForm', '    item { AdvancedButton(uiState) { advanced = true } }\\n  }\\n  if(showRoznamchaForm) BusinessForm', 1)
+              k = k[:a] + '    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {' + k[b+len('    } else {\n    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {'):]
+          k = k.replace('    item { AdvancedButton(uiState) { advanced = true } }\n    }\n  }\n  if(showRoznamchaForm) BusinessForm', '    item { AdvancedButton(uiState) { advanced = true } }\n  }\n  if(showRoznamchaForm) BusinessForm', 1)
           a = k.find('  if(showRoznamchaForm) BusinessForm(')
-          if a >= 0: k = k[:a] + '}\\n'
+          if a >= 0: k = k[:a] + '}\n'
           p.write_text(k, encoding="utf-8")
           p = root / "app/src/main/java/com/example/MainActivity.kt"
           k = p.read_text(encoding="utf-8")
           import re
-          k = re.sub(r'^\\s*onAddRoznamcha = .*?\\n\\s*,\\n', '', k, count=1, flags=re.M)
+          k = re.sub(r'^\s*onAddRoznamcha = .*?\n\s*,\n', '', k, count=1, flags=re.M)
           p.write_text(k, encoding="utf-8")
           print("Khata Gallery picker now copies selected images into app storage; Roznamcha remains a separate module.")
           PY
