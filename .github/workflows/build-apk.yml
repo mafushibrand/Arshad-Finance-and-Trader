@@ -396,7 +396,7 @@ jobs:
           t=re.sub(r'^\s*onAddRoznamcha = .*?\n\s*,\n','',t,count=1,flags=re.M)
           p.write_text(t,encoding="utf-8")
           print("Khata and Roznamcha are separate; image selection and Urdu translation updated.")
-          PYY
+          PY
 
       - name: Archive final patched Android source
         shell: bash
