@@ -316,3 +316,137 @@ elif 'versionName = "4.9.2"' not in s:
   raise SystemExit("Unexpected version metadata before 4.9.2 bump")
 p.write_text(s,encoding="utf-8")
 print("Applied 4.9.2 independent Roznamcha, Khata shortcut, party edit/delete plumbing, receipt sharing and feature toggle.")
+
+
+
+# Professional Khata/Roznamcha receipt rendering and visible Android share chooser.
+p=root/"app/src/main/java/com/example/util/ThermalReceiptImage.kt"
+s=p.read_text(encoding="utf-8")
+import re
+pattern=r'  internal fun khataStatementImageFile\(context: Context, title: String, statement: String\): File \{.*?\n  \}\n'
+match=re.search(pattern,s,re.S)
+if match and "CUSTOMER KHATA RECEIPT" not in match.group(0):
+  renderer=r'''  internal fun khataStatementImageFile(context: Context, title: String, statement: String): File {
+    val width=720; val margin=44f
+    val lines=statement.lines().filter { it.isNotBlank() }
+    val shop=lines.firstOrNull()?.take(42).orEmpty().ifBlank { "ARSHAD FINANCE" }
+    val rows=lines.drop(1).map { line ->
+      val split=line.indexOf(':')
+      if(split>0) line.substring(0,split).trim() to line.substring(split+1).trim() else "" to line.trim()
+    }
+    val heading=TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.WHITE; textSize=31f; typeface=Typeface.create("sans-serif",Typeface.BOLD) }
+    val brand=TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.WHITE; textSize=21f; typeface=Typeface.create("sans-serif-medium",Typeface.NORMAL) }
+    val label=TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.rgb(103,115,108); textSize=19f; typeface=Typeface.create("sans-serif",Typeface.NORMAL) }
+    val value=TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.rgb(24,39,31); textSize=23f; typeface=Typeface.create("sans-serif-medium",Typeface.NORMAL) }
+    val total=TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.rgb(8,107,77); textSize=34f; typeface=Typeface.create("sans-serif",Typeface.BOLD) }
+    val footer=TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.rgb(110,120,114); textSize=18f }
+    val direction=android.text.TextDirectionHeuristics.FIRSTSTRONG_RTL
+    val layouts=rows.map { (_,v) -> StaticLayout.Builder.obtain(v,0,v.length,value,width-2*margin.toInt()).setAlignment(Layout.Alignment.ALIGN_NORMAL).setTextDirection(direction).setIncludePad(true).build() }
+    val totalIndex=rows.indexOfFirst { (k,_) -> k.contains("amount",true)||k.contains("total",true)||k.contains("received",true)||k.contains("وصول")||k.contains("رقم") }
+    val header=178
+    val body=rows.indices.sumOf { i -> if(i==totalIndex) 106 else maxOf(58,layouts[i].height+34) }
+    val height=header+body+92
+    val bitmap=Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
+    val canvas=Canvas(bitmap); canvas.drawColor(Color.rgb(247,249,247))
+    val accent=Paint(Paint.ANTI_ALIAS_FLAG).apply { color=selectedAccent(context) }
+    val white=Paint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.WHITE }
+    val divider=Paint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.rgb(224,231,226); strokeWidth=2f }
+    canvas.drawRect(0f,0f,width.toFloat(),header.toFloat(),accent)
+    canvas.drawText(shop,margin,54f,brand)
+    val titleLayout=StaticLayout.Builder.obtain(title,0,title.length,heading,width-2*margin.toInt()).setAlignment(Layout.Alignment.ALIGN_NORMAL).setTextDirection(direction).setIncludePad(true).build()
+    canvas.save(); canvas.translate(margin,82f); titleLayout.draw(canvas); canvas.restore()
+    canvas.drawRoundRect(margin,header-12f,width-margin,header+24f,18f,18f,white)
+    var y=header+56f
+    rows.forEachIndexed { i,(k,v) ->
+      if(i==totalIndex) {
+        val bg=Paint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.rgb(226,244,235) }
+        canvas.drawRoundRect(margin,y-14f,width-margin,y+84f,18f,18f,bg)
+        canvas.drawText(if(k.isBlank()) "TOTAL" else k,margin+18f,y+17f,label)
+        val l=StaticLayout.Builder.obtain(v,0,v.length,total,width-2*margin.toInt()-36).setAlignment(Layout.Alignment.ALIGN_NORMAL).setTextDirection(direction).setIncludePad(true).build()
+        canvas.save(); canvas.translate(margin+18f,y+28f); l.draw(canvas); canvas.restore()
+        y+=106f
+      } else {
+        if(k.isNotBlank()) canvas.drawText(k,margin,y+18f,label)
+        canvas.save(); canvas.translate(margin,y+25f); layouts[i].draw(canvas); canvas.restore()
+        y+=maxOf(58,layouts[i].height+34).toFloat()
+      }
+      canvas.drawLine(margin,y,width-margin,y,divider)
+    }
+    canvas.drawText("Thank you • شکریہ",margin,height-38f,footer)
+    val folder=File(context.cacheDir,"khata-whatsapp").apply { mkdirs() }
+    val file=File(folder,"Khata_"+System.currentTimeMillis()+".png")
+    try { file.outputStream().use { check(bitmap.compress(Bitmap.CompressFormat.PNG,100,it)) { "Receipt image creation failed" } } }
+    finally { bitmap.recycle() }
+    return file
+  }
+'''
+  s=s[:match.start()]+renderer+s[match.end():]
+if "var shared = false" in s:
+  a=s.index("    var shared = false")
+  b=s.index('    Toast.makeText(context, "Khata image ready',a)
+  s=s[:a]+'    context.startActivity(Intent.createChooser(send, "Share Khata receipt / کھاتے کی رسید شیئر کریں").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))\\n'+s[b:]
+p.write_text(s,encoding="utf-8")
+
+# Bidirectional English/Urdu translation for entered Khata and Roznamcha text.
+p=root/"app/src/main/java/com/example/util/UrduAutoTranslator.kt"
+s=p.read_text(encoding="utf-8")
+if "suspend fun urduToEnglish" not in s:
+  s=s.replace('''  suspend fun englishToUrdu(value:String):String {''','''  fun needsEnglishTranslation(value:String):Boolean = value.any { it in '\\u0600'..'\\u06FF' || it in '\\u0750'..'\\u077F' || it in '\\uFB50'..'\\uFDFF' || it in '\\uFE70'..'\\uFEFF' }
+  suspend fun translateForLanguage(value:String, targetUrdu:Boolean):String = if(targetUrdu) englishToUrdu(value) else urduToEnglish(value)
+  suspend fun urduToEnglish(value:String):String {
+    val input=value.trim()
+    if(input.isBlank() || !needsEnglishTranslation(input)) return value
+    val translator=Translation.getClient(TranslatorOptions.Builder().setSourceLanguage(TranslateLanguage.URDU).setTargetLanguage(TranslateLanguage.ENGLISH).build())
+    try {
+      translator.downloadModelIfNeeded(DownloadConditions.Builder().build()).awaitResult()
+      return translator.translate(input).awaitResult()
+    } catch(error:Exception) {
+      throw IllegalStateException("English model needs one internet download; after that translation works offline. / انگریزی ماڈل پہلی مرتبہ انٹرنیٹ سے ڈاؤن لوڈ ہوگا، پھر آف لائن کام کرے گا۔",error)
+    } finally { translator.close() }
+  }
+  suspend fun englishToUrdu(value:String):String {''',1)
+p.write_text(s,encoding="utf-8")
+
+p=root/"app/src/main/java/com/example/ui/dialogs/PremiumAddCustomerDialog.kt"
+s=p.read_text(encoding="utf-8")
+s=s.replace("if(urdu)UrduAutoTranslator.englishToUrdu(name) else name.trim()","UrduAutoTranslator.translateForLanguage(name,urdu)",1)
+s=s.replace("if(urdu)UrduAutoTranslator.englishToUrdu(address) else address.trim()","UrduAutoTranslator.translateForLanguage(address,urdu)",1)
+s=s.replace("if(urdu)UrduAutoTranslator.englishToUrdu(description) else description.trim()","UrduAutoTranslator.translateForLanguage(description,urdu)",1)
+s=s.replace("if(urdu)UrduAutoTranslator.englishToUrdu(note) else note.trim()","UrduAutoTranslator.translateForLanguage(note,urdu)",1)
+s=s.replace("if(urdu)UrduAutoTranslator.englishToUrdu(type) else type.trim()","UrduAutoTranslator.translateForLanguage(type,urdu)",1)
+p.write_text(s,encoding="utf-8")
+
+p=root/"app/src/main/java/com/example/ui/screens/BusinessOperationsScreen.kt"
+s=p.read_text(encoding="utf-8")
+if "import com.example.util.UrduAutoTranslator" not in s:
+  s=s.replace("import com.example.data.model.*\\n","import com.example.data.model.*\\nimport com.example.util.UrduAutoTranslator\\nimport kotlinx.coroutines.launch\\n",1)
+s=s.replace('''  var error by remember { mutableStateOf("") }
+  BusinessForm(if(initial==null)t("Roznamcha entry","روزنامچہ اندراج")''','''  var error by remember { mutableStateOf("") }
+  var translating by remember { mutableStateOf(false) }
+  val translationScope=rememberCoroutineScope()
+  BusinessForm(if(initial==null)t("Roznamcha entry","روزنامچہ اندراج")''',1)
+s=s.replace('''      else -> save(value,incoming,date,note,accountId,party.trim())
+''','''      else -> if(!translating) {
+        translating=true
+        translationScope.launch {
+          try {
+            val savedParty=UrduAutoTranslator.translateForLanguage(party,urdu)
+            val savedNote=UrduAutoTranslator.translateForLanguage(note,urdu)
+            save(value,incoming,date,savedNote,accountId,savedParty)
+          } catch(failure:Exception) { error=failure.localizedMessage ?: t("Translation failed","ترجمہ ناکام ہو گیا") }
+          finally { translating=false }
+        }
+      }
+''',1)
+s=s.replace('''    if(error.isNotBlank()) Text(error,color=MaterialTheme.colorScheme.error)
+  }
+}
+
+''','''    if(translating) LinearProgressIndicator(Modifier.fillMaxWidth())
+    if(error.isNotBlank()) Text(error,color=MaterialTheme.colorScheme.error)
+  }
+}
+
+''',1)
+p.write_text(s,encoding="utf-8")
+print("Added receipt renderer, share chooser, and two-way Urdu-English translation.")
