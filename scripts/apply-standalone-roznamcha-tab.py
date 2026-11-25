@@ -311,9 +311,9 @@ p.write_text(s,encoding="utf-8")
 p=root/"app/build.gradle.kts"
 s=p.read_text(encoding="utf-8")
 if 'versionName = "4.9.1"' in s and 'versionCode = 61' in s:
-  s=s.replace('versionCode = 61','versionCode = 62',1).replace('versionName = "4.9.1"','versionName = "4.9.2"',1)
-elif 'versionName = "4.9.2"' not in s:
-  raise SystemExit("Unexpected version metadata before 4.9.2 bump")
+  s=s.replace('versionCode = 61','versionCode = 63',1).replace('versionName = "4.9.1"','versionName = "4.9.3"',1)
+elif 'versionName = "4.9.3"' not in s:
+  raise SystemExit("Unexpected version metadata before 4.9.3 bump")
 p.write_text(s,encoding="utf-8")
 print("Applied 4.9.2 independent Roznamcha, Khata shortcut, party edit/delete plumbing, receipt sharing and feature toggle.")
 
@@ -629,3 +629,86 @@ s=s.replace('var khataTab by rememberSaveable { mutableStateOf("CUSTOMERS") }','
 s=s.replace('var showRoznamchaForm by rememberSaveable { mutableStateOf(false) }','var showRoznamchaForm by remember { mutableStateOf(false) }',1)
 p.write_text(s,encoding="utf-8")
 print("Fixed standalone cashbook form, bidirectional translation fallback and legacy embedded-tab state.")
+
+
+
+# Ensure the standalone Roznamcha tab always opens its own hub, not a previous Commerce/Advanced workspace.
+p=root/"app/src/main/java/com/example/ui/FinanceViewModel.kt"
+s=p.read_text(encoding="utf-8")
+s=s.replace('''  fun selectTab(tab: FinanceTab) {
+''','''  fun selectTab(tab: FinanceTab) {
+    if(tab==FinanceTab.ROZNAMCHA) operationsArea.value="hub"
+''',1)
+p.write_text(s,encoding="utf-8")
+
+# The Roznamcha row's share icon sends its bill-style PNG directly to the Android share sheet.
+p=root/"app/src/main/java/com/example/ui/screens/BusinessOperationsScreen.kt"
+s=p.read_text(encoding="utf-8")
+if "import androidx.compose.ui.platform.LocalContext" not in s:
+  s=s.replace("import androidx.compose.ui.Modifier", "import androidx.compose.ui.Modifier"+chr(10)+"import androidx.compose.ui.platform.LocalContext",1)
+if "import com.example.util.ThermalReceiptImage" not in s:
+  s=s.replace("import com.example.util.UrduAutoTranslator", "import com.example.util.UrduAutoTranslator"+chr(10)+"import com.example.util.ThermalReceiptImage",1)
+if "val receiptContext=LocalContext.current" not in s:
+  s=s.replace('''  val urdu=state.appLanguage==AppLanguage.URDU
+''','''  val urdu=state.appLanguage==AppLanguage.URDU
+  val receiptContext=LocalContext.current
+''',1)
+s=s.replace('''              IconButton(onClick={viewModel.selectTransaction(tx)}){Icon(Icons.Default.Share,text("Share receipt","رسید شیئر کریں"))}
+''','''              IconButton(onClick={
+                val receipt=buildString {
+                  appendLine(state.businessProfile.businessName)
+                  appendLine(text("ROZNAMCHA RECEIPT","روزنامچہ رسید"))
+                  appendLine(text("Client / Party: ","گاہک / فریق: ")+tx.recipientInfo)
+                  appendLine(text("Amount: ","رقم: ")+state.money(tx.amount))
+                  appendLine(text("Date: ","تاریخ: ")+date)
+                  appendLine(text("Account: ","اکاؤنٹ: ")+tx.accountName)
+                  if(tx.note.isNotBlank()) appendLine(text("Note: ","تفصیل: ")+tx.note)
+                }
+                ThermalReceiptImage.shareKhataStatement(receiptContext,text("Roznamcha Receipt","روزنامچہ رسید"),receipt)
+              }){Icon(Icons.Default.Share,text("Share receipt","رسید شیئر کریں"))}
+''',1)
+p.write_text(s,encoding="utf-8")
+
+# Regression test: editing a cashbook entry changes party details and adjusts account balance exactly once.
+test=root/"app/src/test/java/com/example/RoznamchaEditTest.kt"
+if not test.exists():
+  test.write_text(r'''package com.example
+
+import android.content.Context
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
+import com.example.data.local.FinanceDatabase
+import com.example.data.model.Account
+import com.example.data.model.Transaction
+import com.example.data.model.TransactionType
+import com.example.data.repository.FinanceRepository
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk=[35])
+class RoznamchaEditTest {
+  @Test fun editEntryUpdatesPartyAndReconcilesCashBalance()=runBlocking {
+    val context=ApplicationProvider.getApplicationContext<Context>()
+    val db=Room.inMemoryDatabaseBuilder(context,FinanceDatabase::class.java).allowMainThreadQueries().build()
+    try {
+      val dao=db.financeDao()
+      val repository=FinanceRepository(dao,db)
+      val accountId=dao.insertAccount(Account(name="Cash",accountType="Cash In Hand",balance=0.0,accountNumber="TEST-CASH"))
+      val id=repository.recordTransactionAtomically(Transaction(title="Cash In",amount=100.0,type=TransactionType.INCOME,category="Roznamcha",icon="💰",accountName="Cash",recipientInfo="Ali"))
+      assertEquals(100.0,dao.getAllAccountsList().first { it.id==accountId }.balance,0.001)
+      val original=dao.getTransactionById(id)!!
+      repository.updateTransactionAtomically(original.copy(amount=175.0,recipientInfo="Ahmed",note="Updated client payment"))
+      val edited=dao.getTransactionById(id)!!
+      assertEquals("Ahmed",edited.recipientInfo)
+      assertEquals(175.0,edited.amount,0.001)
+      assertEquals(175.0,dao.getAllAccountsList().first { it.id==accountId }.balance,0.001)
+    } finally { db.close() }
+  }
+}
+''',encoding="utf-8")
+print("Added Roznamcha navigation reset, direct receipt sharing and edit-balance regression test.")
