@@ -71,15 +71,16 @@ if "nav_more_roznamcha" not in s:
     if s.count(anchor)!=1: raise SystemExit("More menu Roznamcha insertion anchor mismatch")
     p.write_text(s.replace(anchor,replace,1),encoding="utf-8")
 
-# Bump build metadata for a signed in-place update of the existing 4.9 standalone package.
+# Bump build metadata for an in-place update over the published 4.9.3 package.
 p=root/"app/build.gradle.kts"
 s=p.read_text(encoding="utf-8")
-if 'versionCode = 61' not in s:
+if 'versionCode = 64' not in s or 'versionName = "4.9.4"' not in s:
     if 'versionCode = 60' not in s or 'versionName = "4.9.1"' not in s:
-        raise SystemExit("Expected workflow-set 4.9.1 metadata missing; refusing unsafe bump")
-    s=s.replace('versionCode = 60','versionCode = 61',1)
+        raise SystemExit("Expected workflow-set base metadata missing; refusing unsafe version bump")
+    s=s.replace('versionCode = 60','versionCode = 64',1)
+    s=s.replace('versionName = "4.9.1"','versionName = "4.9.4"',1)
     p.write_text(s,encoding="utf-8")
-print("Set version 4.9.1 / code 61. Package and cached CI signing identity remain unchanged.")
+print("Set version 4.9.4 / code 64. Package and CI signing identity remain unchanged.")
 
 
 
