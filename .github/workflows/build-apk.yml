@@ -337,6 +337,13 @@ jobs:
           set -euo pipefail
           python3 "$GITHUB_WORKSPACE/scripts/apply-roznamcha-khata.py" "$PROJECT_DIR"
 
+      - name: Add Roznamcha records and Khata receipt image sharing
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d "$GITHUB_WORKSPACE/scripts/apply-khata-ledgers-roznamcha.py.gz.b64" | gzip -dc > "$RUNNER_TEMP/apply-khata-ledgers-roznamcha.py"
+          python3 "$RUNNER_TEMP/apply-khata-ledgers-roznamcha.py" "$PROJECT_DIR"
+
       - name: Add on-device English to Urdu translation for Khata fields
         shell: bash
         run: |
@@ -361,6 +368,7 @@ jobs:
               "app/src/main/java/com/example/ui/screens/PersonalKhataScreen.kt",
               "app/src/main/java/com/example/ui/dialogs/PremiumAddCustomerDialog.kt",
               "app/src/main/java/com/example/ui/screens/BusinessOperationsScreen.kt",
+              "app/src/main/java/com/example/ui/screens/PremiumBillingScreen.kt",
           ]
           for rel in files:
               p = root / rel
@@ -371,7 +379,26 @@ jobs:
               s = s.replace('photoPicker.launch(arrayOf("image/*"))', 'photoPicker.launch("image/*")')
               s = s.replace("UrduAutoTranslator.translateOrOriginal(", "UrduAutoTranslator.translateForLanguage(")
               p.write_text(s, encoding="utf-8")
-          print("Khata Gallery picker now copies selected images into app storage; Khata descriptions and Roznamcha notes require the selected-language translation.")
+          p = root / "app/src/main/java/com/example/ui/screens/PremiumBillingScreen.kt"
+          k = p.read_text(encoding="utf-8")
+          k = k.replace('  onAddRoznamcha: (Double,TransactionType,Long,String,String) -> Unit = {_,_,_,_,_->},\\n', '')
+          k = k.replace('  var khataTab by remember { mutableStateOf("CUSTOMERS") }\\n', '')
+          k = k.replace('  var showRoznamchaForm by remember { mutableStateOf(false) }\\n', '')
+          k = k.replace('  var roznamchaPeriod by rememberSaveable { mutableStateOf("TODAY") }\\n', '')
+          a = k.find('    if(khataTab=="ROZNAMCHA") {')
+          b = k.find('    } else {\\n    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {', a)
+          if a >= 0 and b >= 0:
+              k = k[:a] + '    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {' + k[b+len('    } else {\\n    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {'):]
+          k = k.replace('    item { AdvancedButton(uiState) { advanced = true } }\\n    }\\n  }\\n  if(showRoznamchaForm) BusinessForm', '    item { AdvancedButton(uiState) { advanced = true } }\\n  }\\n  if(showRoznamchaForm) BusinessForm', 1)
+          a = k.find('  if(showRoznamchaForm) BusinessForm(')
+          if a >= 0: k = k[:a] + '}\\n'
+          p.write_text(k, encoding="utf-8")
+          p = root / "app/src/main/java/com/example/MainActivity.kt"
+          k = p.read_text(encoding="utf-8")
+          import re
+          k = re.sub(r'^\\s*onAddRoznamcha = .*?\\n\\s*,\\n', '', k, count=1, flags=re.M)
+          p.write_text(k, encoding="utf-8")
+          print("Khata Gallery picker now copies selected images into app storage; Roznamcha remains a separate module.")
           PY
 
       - name: Archive final patched Android source
