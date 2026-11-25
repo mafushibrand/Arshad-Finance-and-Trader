@@ -385,6 +385,13 @@ jobs:
           k = k.replace('  var khataTab by remember { mutableStateOf("CUSTOMERS") }\n', '')
           k = k.replace('  var showRoznamchaForm by remember { mutableStateOf(false) }\n', '')
           k = k.replace('  var roznamchaPeriod by rememberSaveable { mutableStateOf("TODAY") }\n', '')
+          k = k.replace('''    item { Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)) {
+      FilterChip(selected=khataTab=="CUSTOMERS",''', '')
+          k = k.replace('''    modifier, if(khataTab=="ROZNAMCHA") uiState.word("Add cash entry", "نقد اندراج شامل کریں") else uiState.word("Add customer", "نیا گاہک"),
+    { if(khataTab=="ROZNAMCHA") {roznamchaAccount=uiState.accounts.firstOrNull()?.name ?: "";roznamchaError="";showRoznamchaForm=true} else onOpenAddCustomer() },
+    footer = { if(khataTab=="ROZNAMCHA") {''', '''    modifier, uiState.word("Add customer", "نیا گاہک"),
+    { onOpenAddCustomer() },
+    footer = { Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {''')
           a = k.find('    if(khataTab=="ROZNAMCHA") {')
           b = k.find('    } else {\n    item { Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {', a)
           if a >= 0 and b >= 0:
