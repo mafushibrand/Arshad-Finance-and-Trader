@@ -450,3 +450,123 @@ s=s.replace('''    if(error.isNotBlank()) Text(error,color=MaterialTheme.colorSc
 ''',1)
 p.write_text(s,encoding="utf-8")
 print("Added receipt renderer, share chooser, and two-way Urdu-English translation.")
+
+
+
+# Correct the Khata receipt implementation after the older ledger patch runs.
+p=root/"app/src/main/java/com/example/MainActivity.kt"
+s=p.read_text(encoding="utf-8")
+literal=r',\n            onOpenRoznamcha = { viewModel.selectTab(FinanceTab.ROZNAMCHA) }\n'
+s=s.replace(literal,','+chr(10)+'            onOpenRoznamcha = { viewModel.selectTab(FinanceTab.ROZNAMCHA) }'+chr(10),1)
+p.write_text(s,encoding="utf-8")
+
+p=root/"app/src/main/java/com/example/business/BusinessCore.kt"
+s=p.read_text(encoding="utf-8")
+if "recipientInfo = party.trim()" not in s:
+  start=s.index("  suspend fun roznamchaEntry(")
+  end=s.index("\n  private suspend fun audit",start)
+  block=s[start:end]
+  block=block.replace("      note = note.trim(),","      note = note.trim(),"+chr(10)+"      recipientInfo = party.trim(),",1)
+  s=s[:start]+block+s[end:]
+p.write_text(s,encoding="utf-8")
+
+# Restore the thermal invoice image share method; Khata uses its own PNG helper.
+p=root/"app/src/main/java/com/example/util/ThermalReceiptImage.kt"
+s=p.read_text(encoding="utf-8")
+share_start=s.find("    // Prefer WhatsApp; support WhatsApp Business as a fallback.")
+if share_start>=0:
+  share_end=s.find("\n  }",share_start)
+  if share_end<0: raise SystemExit("Thermal invoice share method closing brace missing")
+  restored='''    // Prefer WhatsApp; support WhatsApp Business as a fallback.
+    val targets = listOf("com.whatsapp", "com.whatsapp.w4b")
+    var shared = false
+    for (target in targets) {
+      try {
+        context.startActivity(Intent(sendIntent).setPackage(target))
+        shared = true
+        break
+      } catch (_: ActivityNotFoundException) {
+      } catch (_: SecurityException) {
+      }
+    }
+    if (!shared) context.startActivity(Intent.createChooser(sendIntent, "Share thermal receipt").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    Toast.makeText(context, "Receipt image ready / رسید کی تصویر تیار ہے", Toast.LENGTH_SHORT).show()'''
+  s=s[:share_start]+restored+s[share_end:]
+if "fun shareKhataStatement(" not in s:
+  marker="\n}"
+  pos=s.rfind(marker)
+  if pos<0: raise SystemExit("ThermalReceiptImage object close missing")
+  method=r'''
+  /** Product-bill-style customer Khata receipt image. */
+  internal fun khataStatementImageFile(context: Context, title: String, statement: String): File {
+    val width=720
+    val margin=44f
+    val lines=statement.lines().filter { it.isNotBlank() }
+    val shop=lines.firstOrNull()?.take(42).orEmpty().ifBlank { "ARSHAD FINANCE" }
+    val rows=lines.drop(1).map { line ->
+      val split=line.indexOf(':')
+      if(split>0) line.substring(0,split).trim() to line.substring(split+1).trim() else "" to line.trim()
+    }
+    val heading=TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.WHITE; textSize=31f; typeface=Typeface.create("sans-serif",Typeface.BOLD) }
+    val brand=TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.WHITE; textSize=21f; typeface=Typeface.create("sans-serif-medium",Typeface.NORMAL) }
+    val label=TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.rgb(103,115,108); textSize=19f; typeface=Typeface.create("sans-serif",Typeface.NORMAL) }
+    val value=TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.rgb(24,39,31); textSize=23f; typeface=Typeface.create("sans-serif-medium",Typeface.NORMAL) }
+    val total=TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.rgb(8,107,77); textSize=34f; typeface=Typeface.create("sans-serif",Typeface.BOLD) }
+    val footer=TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.rgb(110,120,114); textSize=18f }
+    val direction=android.text.TextDirectionHeuristics.FIRSTSTRONG_RTL
+    val layouts=rows.map { (_,v) -> StaticLayout.Builder.obtain(v,0,v.length,value,width-2*margin.toInt()).setAlignment(Layout.Alignment.ALIGN_NORMAL).setTextDirection(direction).setIncludePad(true).build() }
+    val totalIndex=rows.indexOfFirst { (k,_) -> k.contains("amount",true)||k.contains("total",true)||k.contains("received",true)||k.contains("وصول")||k.contains("رقم") }
+    val header=178
+    val body=rows.indices.sumOf { i -> if(i==totalIndex) 106 else maxOf(58,layouts[i].height+34) }
+    val height=header+body+92
+    val bitmap=Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
+    val canvas=Canvas(bitmap); canvas.drawColor(Color.rgb(247,249,247))
+    val accent=Paint(Paint.ANTI_ALIAS_FLAG).apply { color=selectedAccent(context) }
+    val white=Paint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.WHITE }
+    val divider=Paint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.rgb(224,231,226); strokeWidth=2f }
+    canvas.drawRect(0f,0f,width.toFloat(),header.toFloat(),accent)
+    canvas.drawText(shop,margin,54f,brand)
+    val titleLayout=StaticLayout.Builder.obtain(title,0,title.length,heading,width-2*margin.toInt()).setAlignment(Layout.Alignment.ALIGN_NORMAL).setTextDirection(direction).setIncludePad(true).build()
+    canvas.save(); canvas.translate(margin,82f); titleLayout.draw(canvas); canvas.restore()
+    canvas.drawRoundRect(margin,header-12f,width-margin,header+24f,18f,18f,white)
+    var y=header+56f
+    rows.forEachIndexed { i,(k,v) ->
+      if(i==totalIndex) {
+        val bg=Paint(Paint.ANTI_ALIAS_FLAG).apply { color=Color.rgb(226,244,235) }
+        canvas.drawRoundRect(margin,y-14f,width-margin,y+84f,18f,18f,bg)
+        canvas.drawText(if(k.isBlank()) "TOTAL" else k,margin+18f,y+17f,label)
+        val l=StaticLayout.Builder.obtain(v,0,v.length,total,width-2*margin.toInt()-36).setAlignment(Layout.Alignment.ALIGN_NORMAL).setTextDirection(direction).setIncludePad(true).build()
+        canvas.save(); canvas.translate(margin+18f,y+28f); l.draw(canvas); canvas.restore()
+        y+=106f
+      } else {
+        if(k.isNotBlank()) canvas.drawText(k,margin,y+18f,label)
+        canvas.save(); canvas.translate(margin,y+25f); layouts[i].draw(canvas); canvas.restore()
+        y+=maxOf(58,layouts[i].height+34).toFloat()
+      }
+      canvas.drawLine(margin,y,width-margin,y,divider)
+    }
+    canvas.drawText("Thank you • شکریہ",margin,height-38f,footer)
+    val folder=File(context.cacheDir,"khata-whatsapp").apply { mkdirs() }
+    val image=File(folder,"Khata_"+System.currentTimeMillis()+".png")
+    try { image.outputStream().use { output -> check(bitmap.compress(Bitmap.CompressFormat.PNG,100,output)) { "Receipt image creation failed" } } }
+    finally { bitmap.recycle() }
+    return image
+  }
+
+  fun shareKhataStatement(context: Context, title: String, statement: String) {
+    val image=khataStatementImageFile(context,title,statement)
+    val uri=FileProvider.getUriForFile(context,context.packageName+".fileprovider",image)
+    val send=Intent(Intent.ACTION_SEND).apply {
+      type="image/png"
+      putExtra(Intent.EXTRA_STREAM,uri)
+      clipData=android.content.ClipData.newUri(context.contentResolver,"Khata receipt",uri)
+      addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+      addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(Intent.createChooser(send,"Share Khata receipt / کھاتے کی رسید شیئر کریں").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    Toast.makeText(context,"Khata receipt image ready / کھاتے کی رسید تیار ہے",Toast.LENGTH_SHORT).show()
+  }
+'''
+  s=s[:pos]+chr(10)+method+s[pos:]
+p.write_text(s,encoding="utf-8")
+print("Restored thermal invoice sharing and added product-bill-style Khata PNG sharing.")
