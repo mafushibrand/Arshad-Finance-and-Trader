@@ -139,10 +139,20 @@ s=s.replace('''  var selected by remember { mutableStateOf<BusinessRecord?>(null
   var deletingRoznamcha by remember { mutableStateOf<Transaction?>(null) }
   var message by remember { mutableStateOf("") }
 ''',1)
-old='''          ListTile(if(incoming)text("Cash received","نقد وصولی") else text("Cash paid","نقد ادائیگی"),
-            date+" • "+tx.accountName+"\\\\n"+tx.note,Icons.Default.MenuBook,
-            controls={Text((if(incoming)"+ " else "− ")+state.money(tx.amount),fontWeight=FontWeight.Bold,color=if(incoming)Color(0xFF0F766E) else Color(0xFFB45309))})
-'''
+row_pattern=r'          ListTile\\(if\\(incoming\\)text\\("Cash received".*?\\n            controls=\\{Text\\(.*?\\)\\}\\)'
+row_match=re.search(row_pattern,s,re.S)
+if row_match and "editingRoznamcha=tx" not in row_match.group(0):
+  newrow='''          ListTile(if(incoming)text("Cash received","نقد وصولی") else text("Cash paid","نقد ادائیگی"),
+            (if(tx.recipientInfo.isBlank()) "" else tx.recipientInfo+" • ")+date+" • "+tx.accountName+"\\n"+tx.note,Icons.Default.MenuBook,
+            (if(incoming)"+ " else "− ")+state.money(tx.amount),if(incoming)Color(0xFFCCFBF1) else Color(0xFFF3E8FF),
+            click={editingRoznamcha=tx},controls={
+              IconButton(onClick={editingRoznamcha=tx}){Icon(Icons.Default.Edit,text("Edit","ترمیم"))}
+              IconButton(onClick={viewModel.selectTransaction(tx)}){Icon(Icons.Default.Share,text("Share receipt","رسید شیئر کریں"))}
+              IconButton(onClick={deletingRoznamcha=tx}){Icon(Icons.Default.Delete,text("Delete","حذف"),tint=MaterialTheme.colorScheme.error)}
+            })'''
+  s=s[:row_match.start()]+newrow+s[row_match.end():]
+elif "editingRoznamcha=tx" not in s:
+  raise SystemExit("Roznamcha row controls anchor mismatch")
 new='''          ListTile(if(incoming)text("Cash received","نقد وصولی") else text("Cash paid","نقد ادائیگی"),
             (if(tx.recipientInfo.isBlank()) "" else tx.recipientInfo+" • ")+date+" • "+tx.accountName+"\\\\n"+tx.note,Icons.Default.MenuBook,
             (if(incoming)"+ " else "− ")+state.money(tx.amount),if(incoming)Color(0xFFCCFBF1) else Color(0xFFF3E8FF),
