@@ -279,13 +279,14 @@ p.write_text(s,encoding="utf-8")
 p=root/"app/src/main/java/com/example/ui/dialogs/PremiumCustomerDetailDialog.kt"
 s=p.read_text(encoding="utf-8")
 if "khata_share_receipt" not in s:
-  s=s.replace('import androidx.compose.ui.Modifier\\n','import androidx.compose.ui.Modifier\\nimport androidx.compose.ui.platform.testTag\\n',1)
-  anchor='''    OutlinedButton(onClick = {
-      val statement = businessProfile.businessName + "\\\\n" + customer.name + "\\\\n" + label("Due: ", "بقایا: ") + money(customer.currentBalance) + "\\\\n" + bills.joinToString("\\\\n") { it.invoiceNumber + " • " + money(it.grandTotal) + " • " + label("Due ", "بقایہ ") + money(it.remainingBalance) }
-      ThermalReceiptImage.shareKhataStatement(context, label("Customer Khata Statement", "گاہک کے کھاتے کی تفصیل"), statement)
-    }, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.Share, null); Spacer(Modifier.width(8.dp)); Text(label("Share Statement / WhatsApp", "تفصیل شیئر کریں / واٹس ایپ")) }
-'''
-  receipt=anchor+'''    OutlinedButton(onClick = {
+  if "import androidx.compose.ui.platform.testTag" not in s:
+    s=s.replace("import androidx.compose.ui.Modifier\n","import androidx.compose.ui.Modifier\nimport androidx.compose.ui.platform.testTag\n",1)
+  marker='Text(label("Share Statement / WhatsApp"'
+  idx=s.find(marker)
+  if idx<0: idx=s.find('Customer Khata Statement')
+  if idx<0: raise SystemExit("Khata statement share button label not found")
+  lineEnd=s.find("\n",idx)
+  button='''    OutlinedButton(onClick = {
       val latest=bills.firstOrNull()
       val receipt=buildString {
         appendLine(businessProfile.businessName); appendLine(label("CUSTOMER KHATA RECEIPT","گاہک کے کھاتے کی رسید"))
@@ -303,8 +304,7 @@ if "khata_share_receipt" not in s:
       ThermalReceiptImage.shareKhataStatement(context,label("Khata Payment Receipt","کھاتہ ادائیگی رسید"),receipt)
     },modifier=Modifier.fillMaxWidth().testTag("khata_share_receipt")) { Icon(Icons.Default.ReceiptLong,null); Spacer(Modifier.width(8.dp)); Text(label("Share Receipt Image / WhatsApp","رسید کی تصویر شیئر کریں / واٹس ایپ")) }
 '''
-  if s.count(anchor)!=1: raise SystemExit("Khata receipt button anchor mismatch")
-  s=s.replace(anchor,receipt,1)
+  s=s[:lineEnd+1]+button+s[lineEnd+1:]
 p.write_text(s,encoding="utf-8")
 
 # 4.9.2 / versionCode 62.
