@@ -153,17 +153,6 @@ if row_match and "editingRoznamcha=tx" not in row_match.group(0):
   s=s[:row_match.start()]+newrow+s[row_match.end():]
 elif "editingRoznamcha=tx" not in s:
   raise SystemExit("Roznamcha row controls anchor mismatch")
-new='''          ListTile(if(incoming)text("Cash received","نقد وصولی") else text("Cash paid","نقد ادائیگی"),
-            (if(tx.recipientInfo.isBlank()) "" else tx.recipientInfo+" • ")+date+" • "+tx.accountName+"\\\\n"+tx.note,Icons.Default.MenuBook,
-            (if(incoming)"+ " else "− ")+state.money(tx.amount),if(incoming)Color(0xFFCCFBF1) else Color(0xFFF3E8FF),
-            click={editingRoznamcha=tx},controls={
-              IconButton(onClick={editingRoznamcha=tx}){Icon(Icons.Default.Edit,text("Edit","ترمیم"))}
-              IconButton(onClick={viewModel.selectTransaction(tx)}){Icon(Icons.Default.Share,text("Share receipt","رسید شیئر کریں"))}
-              IconButton(onClick={deletingRoznamcha=tx}){Icon(Icons.Default.Delete,text("Delete","حذف"),tint=MaterialTheme.colorScheme.error)}
-            })
-'''
-if old in s: s=s.replace(old,new,1)
-elif 'editingRoznamcha=tx' not in s: raise SystemExit("Roznamcha row controls anchor mismatch")
 old='''  if(form && writable && section=="ROZNAMCHA") RoznamchaEntryForm(state,{form=false}) { amount,income,date,note,accountId ->
     viewModel.businessAction({roznamchaEntry(amount,income,date,note,accountId,actor)}) {result(it)}
   }
