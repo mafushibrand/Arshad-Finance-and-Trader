@@ -570,3 +570,62 @@ if "fun shareKhataStatement(" not in s:
   s=s[:pos]+chr(10)+method+s[pos:]
 p.write_text(s,encoding="utf-8")
 print("Restored thermal invoice sharing and added product-bill-style Khata PNG sharing.")
+
+
+
+# Fix the standalone Roznamcha form scope and keep offline data entry available.
+p=root/"app/src/main/java/com/example/ui/screens/BusinessOperationsScreen.kt"
+s=p.read_text(encoding="utf-8")
+s=s.replace('''  else if(form && writable) OperationForm(section,state,onDismiss={form=false},save={title,party,amount,payload ->''',
+'''  if(form && writable && section!="ROZNAMCHA") OperationForm(section,state,onDismiss={form=false},save={title,party,amount,payload ->''',1)
+s=s.replace('''    if(translating) LinearProgressIndicator(Modifier.fillMaxWidth())
+    if(error.isNotBlank()) Text(error,color=MaterialTheme.colorScheme.error)
+  }
+}
+
+@Composable
+private fun SupplierStatement''','''    if(error.isNotBlank()) Text(error,color=MaterialTheme.colorScheme.error)
+  }
+}
+
+@Composable
+private fun SupplierStatement''',1)
+if "import com.example.util.UrduAutoTranslator" not in s:
+  marker="import com.example.data.model.*"
+  s=s.replace(marker,marker+chr(10)+"import com.example.util.UrduAutoTranslator"+chr(10)+"import kotlinx.coroutines.launch",1)
+form_start=s.index("private fun RoznamchaEntryForm(")
+form_end=s.index("\n}",form_start)
+form_block=s[form_start:form_end]
+if "if(translating) LinearProgressIndicator" not in form_block:
+  form_block=form_block.replace('''    if(error.isNotBlank()) Text(error,color=MaterialTheme.colorScheme.error)''',
+'''    if(translating) LinearProgressIndicator(Modifier.fillMaxWidth())
+    if(error.isNotBlank()) Text(error,color=MaterialTheme.colorScheme.error)''',1)
+  s=s[:form_start]+form_block+s[form_end:]
+p.write_text(s,encoding="utf-8")
+
+# Never strand a customer or cash entry when the on-device language model has not been downloaded yet.
+p=root/"app/src/main/java/com/example/util/UrduAutoTranslator.kt"
+s=p.read_text(encoding="utf-8")
+if "suspend fun translateOrOriginal" not in s:
+  s=s.replace('''  suspend fun translateForLanguage(value:String, targetUrdu:Boolean):String = if(targetUrdu) englishToUrdu(value) else urduToEnglish(value)
+''','''  suspend fun translateForLanguage(value:String, targetUrdu:Boolean):String = if(targetUrdu) englishToUrdu(value) else urduToEnglish(value)
+  suspend fun translateOrOriginal(value:String, targetUrdu:Boolean):String =
+    runCatching { translateForLanguage(value,targetUrdu) }.getOrDefault(value.trim())
+''',1)
+p.write_text(s,encoding="utf-8")
+
+p=root/"app/src/main/java/com/example/ui/dialogs/PremiumAddCustomerDialog.kt"
+s=p.read_text(encoding="utf-8").replace("UrduAutoTranslator.translateForLanguage(","UrduAutoTranslator.translateOrOriginal(")
+p.write_text(s,encoding="utf-8")
+
+p=root/"app/src/main/java/com/example/ui/screens/BusinessOperationsScreen.kt"
+s=p.read_text(encoding="utf-8").replace("UrduAutoTranslator.translateForLanguage(","UrduAutoTranslator.translateOrOriginal(")
+p.write_text(s,encoding="utf-8")
+
+# Reset old saved Khata tab/form state so the embedded Roznamcha view cannot reappear after upgrade.
+p=root/"app/src/main/java/com/example/ui/screens/PremiumBillingScreen.kt"
+s=p.read_text(encoding="utf-8")
+s=s.replace('var khataTab by rememberSaveable { mutableStateOf("CUSTOMERS") }','var khataTab by remember { mutableStateOf("CUSTOMERS") }',1)
+s=s.replace('var showRoznamchaForm by rememberSaveable { mutableStateOf(false) }','var showRoznamchaForm by remember { mutableStateOf(false) }',1)
+p.write_text(s,encoding="utf-8")
+print("Fixed standalone cashbook form, bidirectional translation fallback and legacy embedded-tab state.")
