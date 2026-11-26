@@ -156,8 +156,12 @@ patch(ui,
 """          val selectedMaster=partyMasters.firstOrNull { it.title.equals(selectedRoznamchaParty,true) }
           val history=all.filter { it.recipientInfo.equals(selectedRoznamchaParty,true) || (selectedMaster!=null && it.paymentMethod=="ROZNAMCHA_PARTY:${selectedMaster.id}") }""","Use canonical Party Master identity for ledger")
 patch(ui,
-"""          ListTile(tx.recipientInfo.ifBlank { text("Unassigned party","غیر مختص فریق") },
-            date+" • "+tx.accountName+"\n"+tx.note,Icons.Default.MenuBook,""",
+"""          val partyId=tx.paymentMethod.removePrefix("ROZNAMCHA_PARTY:")
+          val partyMaster=partyById[partyId]
+          val partyData=runCatching { JSONObject(partyMaster?.payload ?: "{}") }.getOrDefault(JSONObject())
+          val partyDetail=listOf(partyData.optString("type"),partyData.optString("phone"),date,tx.accountName,tx.note).filter { it.isNotBlank() }.joinToString(" • ")
+          ListTile(tx.recipientInfo.ifBlank { text("Unassigned party","غیر مختص فریق") },
+            partyDetail,Icons.Default.MenuBook,""",
 """          val partyId=tx.paymentMethod.removePrefix("ROZNAMCHA_PARTY:")
           val partyMaster=partyById[partyId]
           val partyData=runCatching { JSONObject(partyMaster?.payload ?: "{}") }.getOrDefault(JSONObject())
