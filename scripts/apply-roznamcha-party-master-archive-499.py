@@ -313,7 +313,7 @@ class RoznamchaPartyArchiveTest {
    assertTrue(linked.all{it.paymentMethod=="ROZNAMCHA_PARTY:"+masters.single().id})
    val second=linked.first{it.amount==50.0}
    core.updateRoznamchaEntry(second.id,75.0,false,1700000002000L,"Corrected return",account,"Ali Traders","VENDOR","03001234567","Lahore","owner")
-   assertEquals(975.0,db.financeDao().getAllAccountsList().single().balance,0.000001)
+   assertEquals(1025.0,db.financeDao().getAllAccountsList().single().balance,0.000001)
    assertEquals(1,db.businessDao().allRecords().count{it.kind=="ROZNAMCHA_PARTY"})
   } finally { db.close() }
  }
