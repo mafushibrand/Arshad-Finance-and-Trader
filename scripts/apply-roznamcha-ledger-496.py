@@ -27,11 +27,10 @@ rep='''        if(selectedRoznamchaParty.isNotBlank()) item {
 s,n=re.subn(pat,rep,s,count=1,flags=re.S)
 if n!=1 and "Complete party ledger" not in s: raise SystemExit("Party chip list anchor missing")
 s=s.replace('item { SearchBox(query,text("Search records","ریکارڈ تلاش کریں")){query=it} }','item { SearchBox(query,if(section=="ROZNAMCHA") text("Search party name or details","پارٹی کا نام یا تفصیل تلاش کریں") else text("Search records","ریکارڈ تلاش کریں")){query=it} }',1)
-s=s.replace('''          ListTile(if(incoming)text("Cash received","نقد وصولی") else text("Cash paid","نقد ادائیگی"),
-            (if(tx.recipientInfo.isBlank()) "" else tx.recipientInfo+" • ")+date+" • "+tx.accountName+"\\\\n"+tx.note,Icons.Default.MenuBook,
-''','''          ListTile(tx.recipientInfo.ifBlank { text("Unassigned party","غیر مختص فریق") },
-            (if(incoming)text("Cash received","نقد وصولی") else text("Cash paid","نقد ادائیگی"))+" • "+date+" • "+tx.accountName+"\\\\n"+tx.note,Icons.Default.MenuBook,
-''',1)
+# Party name is the primary ledger-row heading.
+s=s.replace('ListTile(if(incoming)text("Cash received","نقد وصولی") else text("Cash paid","نقد ادائیگی"),',
+'''ListTile(tx.recipientInfo.ifBlank { text("Unassigned party","غیر مختص فریق") },''',1)
+s=s.replace('(if(tx.recipientInfo.isBlank()) "" else tx.recipientInfo+" • ")+date','date',1)
 if 'ListTile(tx.recipientInfo.ifBlank' not in s: raise SystemExit("Party-first row label patch failed")
 s=s.replace('''              IconButton(onClick={deletingRoznamcha=tx}){Icon(Icons.Default.Delete,text("Delete","حذف"),tint=MaterialTheme.colorScheme.error)}
 ''','''              if(tx.recipientInfo.isNotBlank()) IconButton(onClick={selectedRoznamchaParty=tx.recipientInfo;query=""}){Icon(Icons.Default.History,text("Party history","پارٹی ہسٹری"))}
