@@ -1,4 +1,5 @@
 name: Build Arshad Finance APK
+# Keep release workflow in sync with the versioned APK artifact name.
 
 on:
   workflow_dispatch:
