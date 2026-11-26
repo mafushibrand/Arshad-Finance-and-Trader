@@ -2,7 +2,10 @@
 """Download bundled demo photography and wire it into the home promo slider."""
 from pathlib import Path
 import sys
+import time
+import shutil
 import urllib.request
+import urllib.error
 
 root = Path(sys.argv[1])
 res = root / "app/src/main/res/drawable-nodpi"
@@ -26,15 +29,33 @@ images = {
     "af_demo_kitchen.jpg": "https://images.unsplash.com/photo-1584990347193-6bebebfeaeee?w=1200&h=900&fit=crop&fm=jpg&q=88",
     "af_demo_stationery.jpg": "https://images.unsplash.com/photo-1764818958942-f104ba6f8358?w=1200&h=900&fit=crop&fm=jpg&q=88",
 }
+downloaded = []
 for name, url in images.items():
     target = res / name
-    request = urllib.request.Request(url, headers={"User-Agent": "ArshadFinance-Android-Build/1.0"})
-    with urllib.request.urlopen(request, timeout=45) as response:
-        data = response.read()
-    if len(data) < 8_000 or not data.startswith(bytes.fromhex("ffd8ff")):
-        raise SystemExit(f"Downloaded demo asset is invalid: {name} ({len(data)} bytes)")
-    target.write_bytes(data)
-    print(f"Bundled {name}: {len(data)} bytes")
+    data = None
+    for attempt in range(4):
+        try:
+            request = urllib.request.Request(url, headers={"User-Agent": "ArshadFinance-Android-Build/1.0"})
+            with urllib.request.urlopen(request, timeout=45) as response:
+                candidate = response.read()
+            if len(candidate) < 8_000 or not candidate.startswith(bytes.fromhex("ffd8ff")):
+                raise ValueError(f"Invalid JPEG payload ({len(candidate)} bytes)")
+            data = candidate
+            break
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError) as error:
+            print(f"Demo image fetch attempt {attempt + 1}/4 failed for {name}: {error}")
+            if attempt < 3:
+                time.sleep(5 * (attempt + 1))
+    if data is None:
+        fallback = next((p for p in downloaded if p.exists()), None)
+        if fallback is None:
+            raise SystemExit(f"No demo image could be downloaded; cannot seed {name}")
+        shutil.copyfile(fallback, target)
+        print(f"Using bundled image fallback for {name}: {fallback.name}")
+    else:
+        target.write_bytes(data)
+        downloaded.append(target)
+        print(f"Bundled {name}: {len(data)} bytes")
 
 component = root / "app/src/main/java/com/example/ui/components/HomePromoBannerSlider.kt"
 source = component.read_text(encoding="utf-8")
