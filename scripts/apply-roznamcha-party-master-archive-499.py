@@ -215,6 +215,8 @@ patch(ui,
     BusinessField(note,t("Description / detail","تفصیل / وضاحت")){note=it}""","Party type, phone and address controls")
 
 # Archive section in the Roznamcha list. Keep archive metadata independent from cash transactions.
+p=root/"app/src/main/java/com/example/ui/screens/BusinessOperationsScreen.kt"
+s=p.read_text(encoding="utf-8")
 needle='''        }
       }
       "MOVEMENTS" -> {'''
