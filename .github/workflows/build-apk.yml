@@ -369,6 +369,12 @@ jobs:
           print("Updated Khata image selection and selected-language descriptions.")
           PY
 
+      - name: Add Roznamcha party ledger, receipt branding and translation fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/scripts/apply-roznamcha-party-translation.py" "$PROJECT_DIR"
+
       - name: Archive final patched Android source
         shell: bash
         run: |
