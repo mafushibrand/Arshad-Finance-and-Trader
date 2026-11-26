@@ -407,7 +407,7 @@ jobs:
               raise SystemExit("Expected 4.9.4 version markers missing; refusing unsafe version bump")
           s=s.replace('versionCode = 64','versionCode = 68',1).replace('versionName = "4.9.4"','versionName = "4.9.8"',1)
           p.write_text(s,encoding="utf-8")
-          print("Configured update-compatible 4.9.8 (versionCode 66)")
+          print("Configured update-compatible 4.9.8 (versionCode 68)")
           PY
 
       - name: Archive final patched Android source
