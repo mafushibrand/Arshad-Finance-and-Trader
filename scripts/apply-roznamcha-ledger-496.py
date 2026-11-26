@@ -63,5 +63,11 @@ rep='''                  appendLine(text("Generated: ","تیار کرنے کا �
                   appendLine("Developed by Muhammad Arshad 03027761415")
 '''
 s=s.replace(dup,rep,1)
+needle="@Composable\nprivate fun RoznamchaEntryForm"
+replacement="@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)\n@Composable\nprivate fun RoznamchaEntryForm"
+if needle in s:
+    s=s.replace(needle,replacement,1)
+elif replacement not in s:
+    raise SystemExit("RoznamchaEntryForm annotation anchor missing")
 p.write_text(s,encoding="utf-8")
-print("Applied party search and consolidated party ledger patch.")
+print("Applied party search, consolidated ledger, and Material3 opt-in patch.")
