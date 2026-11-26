@@ -274,3 +274,59 @@ if needle not in s:
 s=s.replace(needle,archive,1)
 p.write_text(s,encoding="utf-8")
 print("Applied persistent Party Master, atomic edit, and multi-file 12-month archive.")
+
+
+test=root/"app/src/test/java/com/example/RoznamchaPartyArchiveTest.kt"
+if not test.exists():
+  test.write_text("""package com.example
+import android.content.Context
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
+import com.example.business.BusinessCore
+import com.example.business.BusinessSchema
+import com.example.data.local.FinanceDatabase
+import com.example.data.model.Account
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import org.json.JSONObject
+import org.junit.Assert.*
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk=[28])
+class RoznamchaPartyArchiveTest {
+ private val context:Context=ApplicationProvider.getApplicationContext()
+ @Test fun partyMasterIsCanonicalAndEditAdjustsCashExactlyOnce()=runBlocking {
+  val db=Room.inMemoryDatabaseBuilder(context,FinanceDatabase::class.java).addCallback(BusinessSchema.callback).build()
+  try {
+   val account=db.financeDao().insertAccount(Account(name="Cash",accountType="Cash",balance=1000.0,accountNumber=""))
+   val core=BusinessCore(db)
+   core.roznamchaEntry(100.0,true,1700000000000L,"Advance",account,"owner","Ali Traders","request-a","VENDOR","03001234567","Lahore")
+   core.roznamchaEntry(50.0,false,1700000001000L,"Return",account,"owner","ali traders","request-b","VENDOR","03001234567","Lahore")
+   val masters=db.businessDao().allRecords().filter{it.kind=="ROZNAMCHA_PARTY"}
+   assertEquals(1,masters.size)
+   assertEquals("VENDOR",masters.single().party)
+   val linked=db.financeDao().getAllTransactions().first().filter{it.category=="Roznamcha"}
+   assertEquals(2,linked.size)
+   assertTrue(linked.all{it.paymentMethod=="ROZNAMCHA_PARTY:"+masters.single().id})
+   val second=linked.first{it.amount==50.0}
+   core.updateRoznamchaEntry(second.id,75.0,false,1700000002000L,"Corrected return",account,"Ali Traders","VENDOR","03001234567","Lahore","owner")
+   assertEquals(975.0,db.financeDao().getAllAccountsList().single().balance,0.000001)
+   assertEquals(1,db.businessDao().allRecords().count{it.kind=="ROZNAMCHA_PARTY"})
+  } finally { db.close() }
+ }
+ @Test fun archiveMetadataRetainsDocumentTypeAndOriginalDate()=runBlocking {
+  val db=Room.inMemoryDatabaseBuilder(context,FinanceDatabase::class.java).addCallback(BusinessSchema.callback).build()
+  try {
+   val core=BusinessCore(db);val original=1700000000000L
+   core.addRoznamchaArchive("invoice-2023.pdf","application/pdf","/data/user/0/app/files/roznamcha-archive/a.pdf",1024,original,"owner")
+   val record=db.businessDao().allRecords().single{it.kind=="ROZNAMCHA_ARCHIVE"}
+   assertEquals(original,record.createdAt)
+   assertEquals("application/pdf",JSONObject(record.payload).getString("mime"))
+   assertEquals(1024L,JSONObject(record.payload).getLong("size"))
+  } finally { db.close() }
+ }
+}
+""",encoding="utf-8")
