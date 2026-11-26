@@ -334,3 +334,43 @@ class RoznamchaPartyArchiveTest {
  }
 }
 """,encoding="utf-8")
+
+
+# Upgrade legacy Roznamcha free-text party names into persistent Party Master rows.
+corep=root/"app/src/main/java/com/example/business/BusinessCore.kt"
+cs=corep.read_text(encoding="utf-8")
+migration="""  suspend fun migrateLegacyRoznamchaParties(actor:String) = db.withTransaction {
+    val dao=db.businessDao()
+    val txs=db.financeDao().getAllTransactions().first().filter { it.category=="Roznamcha" && it.recipientInfo.isNotBlank() }
+    val masters=dao.allRecords().filter { it.kind=="ROZNAMCHA_PARTY" }.toMutableList()
+    txs.forEach { tx ->
+      val name=tx.recipientInfo.trim()
+      var master=masters.firstOrNull { it.title.equals(name,true) }
+      if(master==null) {
+        master=BusinessRecord(kind="ROZNAMCHA_PARTY",title=name,party="OTHER",payload=JSONObject().put("type","OTHER").put("phone","").put("address","").toString(),createdBy=actor)
+        dao.insert(master);masters.add(master)
+      }
+      val link="ROZNAMCHA_PARTY:${master.id}"
+      if(tx.paymentMethod!=link) db.financeDao().updateTransaction(tx.copy(paymentMethod=link,updatedAt=System.currentTimeMillis()))
+    }
+  }
+"""
+if "suspend fun migrateLegacyRoznamchaParties" not in cs:
+  anchor="  suspend fun updateRoznamchaEntry("
+  if cs.count(anchor)!=1: raise SystemExit("Legacy party migration insertion anchor missing")
+  cs=cs.replace(anchor,migration+anchor,1);corep.write_text(cs,encoding="utf-8")
+
+uip=root/"app/src/main/java/com/example/ui/screens/BusinessOperationsScreen.kt"
+us=uip.read_text(encoding="utf-8")
+if "legacyPartyMigrationStarted" not in us:
+  anchor="""  var selectedRoznamchaParty by remember { mutableStateOf("") }"""
+  add=anchor+"""
+  var legacyPartyMigrationStarted by remember { mutableStateOf(false) }
+  LaunchedEffect(startSection,writable) {
+    if(startSection=="ROZNAMCHA" && writable && !legacyPartyMigrationStarted) {
+      legacyPartyMigrationStarted=true
+      viewModel.businessAction({ migrateLegacyRoznamchaParties(actor) }) { error -> if(error!=null) message=error }
+    }
+  }"""
+  if us.count(anchor)!=1: raise SystemExit("Legacy migration UI trigger anchor missing")
+  us=us.replace(anchor,add,1);uip.write_text(us,encoding="utf-8")
