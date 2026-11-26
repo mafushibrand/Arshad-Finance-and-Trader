@@ -390,7 +390,7 @@ if "suspend fun upsertRoznamchaPartyMaster" not in cs:
 uip=root/"app/src/main/java/com/example/ui/screens/BusinessOperationsScreen.kt"
 us=uip.read_text(encoding="utf-8")
 if "var showPartyManager" not in us:
-  us=us.replace("import androidx.compose.foundation.rememberScrollState","import androidx.compose.foundation.rememberScrollState\nimport androidx.compose.foundation.verticalScroll",1)
+  us=us.replace("import androidx.compose.foundation.rememberScrollState","import androidx.compose.foundation.rememberScrollState\nimport androidx.compose.foundation.verticalScroll\nimport androidx.compose.foundation.lazy.LazyColumn",1)
   anchor='''  var selectedRoznamchaParty by remember { mutableStateOf("") }'''
   add=anchor+'''
   var showPartyManager by remember { mutableStateOf(false) }
