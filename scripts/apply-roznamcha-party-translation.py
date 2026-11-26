@@ -43,10 +43,27 @@ insert='''        if(partyNames.isNotEmpty()) item {\n          Column(verticalA
 if 'Client / Vendor / Supplier history' not in s:
     if anchor not in s: raise SystemExit('Roznamcha summary card anchor missing')
     s=s.replace(anchor,insert,1)
-old='''          appendLine(state.businessProfile.businessName)\n          appendLine(text("ROZNAMCHA RECEIPT","روزنامچہ رسید"))\n          appendLine(text("Client / Party: ","گاہک / فریق: ")+tx.recipientInfo)\n'''
-new='''          appendLine(state.businessProfile.businessName)\n          if(state.businessProfile.address.isNotBlank()) appendLine(state.businessProfile.address)\n          if(state.businessProfile.phone.isNotBlank()) appendLine(state.businessProfile.phone)\n          appendLine(text("ROZNAMCHA RECEIPT","روزنامچہ رسید"))\n          appendLine(text("Client / Party: ","گاہک / فریق: ")+tx.recipientInfo)\n'''
+old='''                  appendLine(state.businessProfile.businessName)
+                  appendLine(text("ROZNAMCHA RECEIPT","روزنامچہ رسید"))
+                  appendLine(text("Client / Party: ","گاہک / فریق: ")+tx.recipientInfo)
+'''
+new='''                  appendLine(state.businessProfile.businessName)
+                  if(state.businessProfile.address.isNotBlank()) appendLine(state.businessProfile.address)
+                  if(state.businessProfile.phone.isNotBlank()) appendLine(state.businessProfile.phone)
+                  appendLine(text("ROZNAMCHA RECEIPT","روزنامچہ رسید"))
+                  appendLine(text("Client / Party: ","گاہک / فریق: ")+tx.recipientInfo)
+'''
 if new not in s:
     if old not in s: raise SystemExit('Roznamcha receipt header anchor missing')
+    s=s.replace(old,new,1)
+old='''                  if(tx.note.isNotBlank()) appendLine(text("Note: ","تفصیل: ")+tx.note)
+'''
+new='''                  if(tx.note.isNotBlank()) appendLine(text("Note: ","تفصیل: ")+tx.note)
+                  appendLine(text("Generated: ","تیار کرنے کا وقت: ")+SimpleDateFormat("dd MMM yyyy • hh:mm a",Locale.getDefault()).format(Date()))
+                  appendLine("Developed by Muhammad Arshad • 03027761415")
+'''
+if new not in s:
+    if old not in s: raise SystemExit('Roznamcha receipt footer anchor missing')
     s=s.replace(old,new,1)
 old='''          if(tx.note.isNotBlank()) appendLine(text("Note: ","تفصیل: ")+tx.note)\n'''
 new='''          if(tx.note.isNotBlank()) appendLine(text("Note: ","تفصیل: ")+tx.note)\n          appendLine(text("Generated: ","تیار کرنے کا وقت: ")+SimpleDateFormat("dd MMM yyyy • hh:mm a",Locale.getDefault()).format(Date()))\n          appendLine("Developed by Muhammad Arshad • 03027761415")\n'''
