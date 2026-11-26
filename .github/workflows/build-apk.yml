@@ -410,7 +410,14 @@ jobs:
           python3 "$GITHUB_WORKSPACE/scripts/apply-roznamcha-ui-4911.py" "$PROJECT_DIR"
           python3 "$GITHUB_WORKSPACE/scripts/fix-roznamcha-card-click-4911.py" "$PROJECT_DIR"
 
-      - name: Set update-compatible release version 4.9.11
+      - name: Apply app-wide theme, compact Roznamcha cards, local date/time and account controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d "$GITHUB_WORKSPACE/patches/app-theme-polish-4912.patch.gz.b64" | gzip -dc > "$RUNNER_TEMP/app-theme-polish-4912.patch"
+          patch --batch --forward -p1 -d "$PROJECT_DIR" < "$RUNNER_TEMP/app-theme-polish-4912.patch"
+
+      - name: Set update-compatible release version 4.9.12
         shell: bash
         run: |
           set -euo pipefail
@@ -421,9 +428,9 @@ jobs:
           s=p.read_text(encoding="utf-8")
           if 'versionCode = 64' not in s or 'versionName = "4.9.4"' not in s:
               raise SystemExit("Expected 4.9.4 version markers missing; refusing unsafe version bump")
-          s=s.replace('versionCode = 64','versionCode = 71',1).replace('versionName = "4.9.4"','versionName = "4.9.11"',1)
+          s=s.replace('versionCode = 64','versionCode = 72',1).replace('versionName = "4.9.4"','versionName = "4.9.11"',1)
           p.write_text(s,encoding="utf-8")
-          print("Configured update-compatible 4.9.11 (versionCode 71)")
+          print("Configured update-compatible 4.9.12 (versionCode 72)")
           PY
 
       - name: Archive final patched Android source
