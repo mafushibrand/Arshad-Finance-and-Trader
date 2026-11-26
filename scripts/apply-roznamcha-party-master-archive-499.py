@@ -242,7 +242,7 @@ archive='''        }
                         f.inputStream().buffered().use { it.copyTo(zos) };zos.closeEntry()
                       }
                     }
-                    zos.putNextEntry(ZipEntry("README.txt"));zos.write(("Arshad Finance Roznamcha archive export\nBusiness: "+state.businessProfile.businessName+"\nDeveloped by Muhammad Arshad 03027761415\n").toByteArray());zos.closeEntry()
+                    zos.putNextEntry(ZipEntry("README.txt"));zos.write(("Arshad Finance Roznamcha archive export\\nBusiness: "+state.businessProfile.businessName+"\\nDeveloped by Muhammad Arshad 03027761415\\n").toByteArray());zos.closeEntry()
                   }
                   pendingArchiveZip=zip.absolutePath;archiveZipDownload.launch("ArshadFinance-Roznamcha-Archive.zip")
                 }.onFailure { archiveMessage=it.message ?: "Archive export failed" }
@@ -361,7 +361,7 @@ if "suspend fun migrateLegacyRoznamchaParties" not in cs:
 uip=root/"app/src/main/java/com/example/ui/screens/BusinessOperationsScreen.kt"
 us=uip.read_text(encoding="utf-8")
 if "legacyPartyMigrationStarted" not in us:
-  anchor="""  var selectedRoznamchaParty by remember { mutableStateOf("") }"""
+  anchor="""  val writable=state.userRole==UserRole.OWNER"""
   add=anchor+"""
   var legacyPartyMigrationStarted by remember { mutableStateOf(false) }
   LaunchedEffect(startSection,writable) {
