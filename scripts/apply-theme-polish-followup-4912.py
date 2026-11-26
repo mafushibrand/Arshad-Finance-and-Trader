@@ -59,6 +59,27 @@ def role(s):
     s = s.replace('import com.example.ui.theme.EmeraldSuccess\n', '')
     return s
 
+def billing(s):
+    replacements = {
+        "containerColor = Color.White": "containerColor = MaterialTheme.colorScheme.surface",
+        "color = Color.White": "color = MaterialTheme.colorScheme.onPrimary",
+        "Color(0xFF38BDF8)": "MaterialTheme.colorScheme.onPrimary",
+        "Color(0xFF94A3B8)": "MaterialTheme.colorScheme.onSurfaceVariant",
+        "Color(0xFF166534)": "MaterialTheme.colorScheme.primary",
+        "IncomeGreen": "MaterialTheme.colorScheme.primary",
+        "ExpenseRed": "MaterialTheme.colorScheme.error",
+        "IceBlueContainer": "MaterialTheme.colorScheme.primaryContainer",
+        "DeepNavyText": "MaterialTheme.colorScheme.onPrimaryContainer",
+        "Color(0xFFE2E8F0)": "MaterialTheme.colorScheme.outlineVariant",
+        "Color(0xFFDCFCE7)": "MaterialTheme.colorScheme.primaryContainer",
+        "Color(0xFFFEE2E2)": "MaterialTheme.colorScheme.errorContainer",
+        "Color(0xFF7C3AED)": "MaterialTheme.colorScheme.tertiary",
+    }
+    for old, new in replacements.items():
+        s = s.replace(old, new)
+    return s
+
 edit("app/src/main/java/com/example/ui/screens/BusinessOperationsScreen.kt", business)
+edit("app/src/main/java/com/example/ui/screens/BillingScreen.kt", billing)
 edit("app/src/main/java/com/example/ui/screens/LoginScreen.kt", login)
 edit("app/src/main/java/com/example/ui/dialogs/RoleLoginDialog.kt", role)
