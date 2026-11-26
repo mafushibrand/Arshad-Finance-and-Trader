@@ -80,6 +80,13 @@ new='''            val savedParty=UrduAutoTranslator.translateOrOriginal(party.t
 if new not in s:
     if old not in s: raise SystemExit('Roznamcha translator save anchor missing')
     s=s.replace(old,new,1)
+# Normalize the footer in case the older standalone Roznamcha patch already added it.
+footer_lines = [
+    '                  appendLine(text("Generated: ","تیار کرنے کا وقت: ")+SimpleDateFormat("dd MMM yyyy • hh:mm a",Locale.getDefault()).format(Date()))',
+    '                  appendLine("Developed by Muhammad Arshad • 03027761415")',
+]
+while ('\n'.join(footer_lines + footer_lines)) in s:
+    s = s.replace('\n'.join(footer_lines + footer_lines), '\n'.join(footer_lines), 1)
 p.write_text(s,encoding='utf-8')
 
 # Customer fields use the same resilient translator; don't leave the save coroutine failed without feedback.
