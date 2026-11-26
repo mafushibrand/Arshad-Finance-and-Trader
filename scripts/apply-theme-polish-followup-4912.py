@@ -32,6 +32,11 @@ def business(s):
         if date_field not in s:
             raise SystemExit("Cannot find Roznamcha date field in form")
         s = s.replace(date_field, date_field + '\n    ' + time_field, 1)
+    # Close the Party Ledger statement buildString block after its history loop.
+    broken = 'if(tx.note.isBlank()) "" else " • "+tx.note) };\\n            ThermalReceiptImage.shareKhataStatement'
+    fixed = 'if(tx.note.isBlank()) "" else " • "+tx.note) }; }\\n            ThermalReceiptImage.shareKhataStatement'
+    if broken in s:
+        s = s.replace(broken, fixed, 1)
     if 'val savedAddress=UrduAutoTranslator.translateOrOriginal(partyAddress.trim(),urdu)' not in s:
         old_translate = 'val savedNote=UrduAutoTranslator.translateOrOriginal(note.trim(),urdu) { error=it }\n            save(value,incoming,date,savedNote,accountId,savedParty,partyType,partyPhone,partyAddress,requestId)'
         new_translate = 'val savedNote=UrduAutoTranslator.translateOrOriginal(note.trim(),urdu) { error=it }\n            val savedAddress=UrduAutoTranslator.translateOrOriginal(partyAddress.trim(),urdu) { error=it }\n            save(value,incoming,date,savedNote,accountId,savedParty,partyType,partyPhone,savedAddress,requestId)'
