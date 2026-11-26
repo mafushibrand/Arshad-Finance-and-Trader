@@ -60,6 +60,8 @@ def role(s):
     return s
 
 def billing(s):
+    for imported in ["DeepNavyText", "ExpenseRed", "IceBlueContainer", "IncomeGreen"]:
+        s = s.replace("import com.example.ui.theme." + imported + "\\n", "")
     replacements = {
         "containerColor = Color.White": "containerColor = MaterialTheme.colorScheme.surface",
         "color = Color.White": "color = MaterialTheme.colorScheme.onPrimary",
