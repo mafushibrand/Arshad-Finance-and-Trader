@@ -372,3 +372,78 @@ if "legacyPartyMigrationStarted" not in us:
   }"""
   if us.count(anchor)!=1: raise SystemExit("Legacy migration UI trigger anchor missing")
   us=us.replace(anchor,add,1);uip.write_text(us,encoding="utf-8")
+
+
+# Expose a separate searchable Party Master manager; never render all names below the entry search.
+corep=root/"app/src/main/java/com/example/business/BusinessCore.kt"
+cs=corep.read_text(encoding="utf-8")
+if "suspend fun upsertRoznamchaPartyMaster" not in cs:
+  anchor="  suspend fun migrateLegacyRoznamchaParties(actor:String)"
+  method="""  suspend fun upsertRoznamchaPartyMaster(name:String,type:String,phone:String,address:String,actor:String) = db.withTransaction {
+    require(name.isNotBlank()) { "Enter party name / پارٹی کا نام درج کریں" }
+    saveRoznamchaParty(name,type,phone,address,actor) ?: error("Party name is required / پارٹی کا نام ضروری ہے")
+  }
+"""
+  if cs.count(anchor)!=1: raise SystemExit("Party Master manager method anchor missing")
+  cs=cs.replace(anchor,method+anchor,1);corep.write_text(cs,encoding="utf-8")
+
+uip=root/"app/src/main/java/com/example/ui/screens/BusinessOperationsScreen.kt"
+us=uip.read_text(encoding="utf-8")
+if "var showPartyManager" not in us:
+  us=us.replace("import androidx.compose.foundation.rememberScrollState","import androidx.compose.foundation.rememberScrollState\nimport androidx.compose.foundation.verticalScroll",1)
+  anchor='''  var selectedRoznamchaParty by remember { mutableStateOf("") }'''
+  add=anchor+'''
+  var showPartyManager by remember { mutableStateOf(false) }
+  var showPartyAdd by remember { mutableStateOf(false) }
+  var partyManagerQuery by remember { mutableStateOf("") }
+  var editingParty by remember { mutableStateOf<BusinessRecord?>(null) }
+  var partyNameInput by remember { mutableStateOf("") }
+  var partyTypeInput by remember { mutableStateOf("CLIENT") }
+  var partyPhoneInput by remember { mutableStateOf("") }
+  var partyAddressInput by remember { mutableStateOf("") }'''
+  if us.count(anchor)!=1: raise SystemExit("Party Master manager state anchor missing")
+  us=us.replace(anchor,add,1)
+  old='''    footer={ if(writable && section !in listOf("MOVEMENTS","AUDIT","UNITS","DEMO")) PremiumButton(if(section=="PRODUCTION") text("Record production","پیداوار درج کریں") else if(section=="ROZNAMCHA") text("Add cash entry","نیا نقد اندراج"),{form=true}) }) {'''
+  new='''    footer={
+      if(writable && section=="ROZNAMCHA") Column(Modifier.fillMaxWidth().padding(horizontal=16.dp,vertical=8.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+        OutlinedButton(onClick={showPartyManager=true;partyManagerQuery=""},modifier=Modifier.fillMaxWidth().heightIn(min=50.dp)) { Icon(Icons.Default.People,null);Text(text("Manage Party Master","پارٹیوں کی فہرست")) }
+        PremiumButton(text("Add cash entry","نیا نقد اندراج"),{form=true})
+      } else if(writable && section !in listOf("MOVEMENTS","AUDIT","UNITS","DEMO")) PremiumButton(if(section=="PRODUCTION") text("Record production","پیداوار درج کریں") else text("Add ${sections[section]}","نیا ریکارڈ شامل کریں"),{form=true})
+    }) {'''
+  if old not in us: raise SystemExit("Roznamcha footer replacement anchor missing")
+  us=us.replace(old,new,1)
+  anchor='''  if(form && writable && section=="ROZNAMCHA") RoznamchaEntryForm'''
+  dialogs='''  if(showPartyManager) AlertDialog(onDismissRequest={showPartyManager=false},title={Text(text("Party Master","پارٹیوں کی فہرست"))},text={
+    Column(Modifier.fillMaxWidth().heightIn(max=480.dp).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+      SearchBox(partyManagerQuery,text("Search party name, type or phone","نام، قسم یا فون تلاش کریں")){partyManagerQuery=it}
+      Button(onClick={editingParty=null;partyNameInput="";partyTypeInput="CLIENT";partyPhoneInput="";partyAddressInput="";showPartyAdd=true},modifier=Modifier.fillMaxWidth()) { Icon(Icons.Default.PersonAdd,null);Text(text("Add party","پارٹی شامل کریں")) }
+      val masters=state.businessRecords.filter { it.kind=="ROZNAMCHA_PARTY" && !it.archived }.filter { r -> val d=runCatching{JSONObject(r.payload)}.getOrDefault(JSONObject());partyManagerQuery.isBlank() || r.title.contains(partyManagerQuery,true) || r.party.contains(partyManagerQuery,true) || d.optString("phone").contains(partyManagerQuery,true) }.sortedBy { it.title.lowercase(Locale.ROOT) }
+      Text("${masters.size} "+text("parties","پارٹیاں"),style=MaterialTheme.typography.labelMedium)
+      masters.forEach { r ->
+        val d=runCatching{JSONObject(r.payload)}.getOrDefault(JSONObject())
+        Card(Modifier.fillMaxWidth()) { Row(Modifier.fillMaxWidth().padding(10.dp),verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+          Column(Modifier.weight(1f)) { Text(r.title,fontWeight=FontWeight.SemiBold);Text(listOf(r.party,d.optString("phone"),d.optString("address")).filter{it.isNotBlank()}.joinToString(" • "),style=MaterialTheme.typography.bodySmall) }
+          IconButton(onClick={selectedRoznamchaParty=r.title;showPartyManager=false;query=""}) { Icon(Icons.Default.History,text("Open ledger","کھاتہ کھولیں")) }
+          IconButton(onClick={editingParty=r;partyNameInput=r.title;partyTypeInput=r.party.ifBlank{"CLIENT"};partyPhoneInput=d.optString("phone");partyAddressInput=d.optString("address");showPartyAdd=true}) { Icon(Icons.Default.Edit,text("Edit party","پارٹی تبدیل کریں")) }
+        } }
+      }
+      if(masters.isEmpty()) Text(text("No parties found. Add your first party.","کوئی پارٹی نہیں ملی۔ پہلی پارٹی شامل کریں۔"))
+    }
+  },confirmButton={TextButton(onClick={showPartyManager=false}){Text(text("Close","بند کریں"))}})
+  if(showPartyAdd) AlertDialog(onDismissRequest={showPartyAdd=false},title={Text(if(editingParty==null)text("Add party","پارٹی شامل کریں") else text("Edit party details","پارٹی کی تفصیل تبدیل کریں"))},text={
+    Column(verticalArrangement=Arrangement.spacedBy(8.dp)) {
+      OutlinedTextField(partyNameInput,{partyNameInput=it},modifier=Modifier.fillMaxWidth(),singleLine=true,enabled=editingParty==null,label={Text(text("Party name","پارٹی کا نام"))})
+      Row(horizontalArrangement=Arrangement.spacedBy(4.dp)) { listOf("CLIENT" to text("Client","کلائنٹ"),"VENDOR" to text("Vendor","وینڈر"),"SUPPLIER" to text("Supplier","سپلائر"),"DEALER" to text("Dealer","ڈیلر"),"OTHER" to text("Other","دیگر")).forEach { (key,label) -> FilterChip(partyTypeInput==key,{partyTypeInput=key},label={Text(label)}) } }
+      OutlinedTextField(partyPhoneInput,{partyPhoneInput=it},modifier=Modifier.fillMaxWidth(),singleLine=true,label={Text(text("Phone","فون"))})
+      OutlinedTextField(partyAddressInput,{partyAddressInput=it},modifier=Modifier.fillMaxWidth(),label={Text(text("Address / details","پتہ / تفصیل"))})
+    }
+  },confirmButton={TextButton(onClick={
+    viewModel.businessAction({upsertRoznamchaPartyMaster(partyNameInput,partyTypeInput,partyPhoneInput,partyAddressInput,actor)}) { error ->
+      if(error==null){showPartyAdd=false;showPartyManager=true;message=text("Party saved","پارٹی محفوظ ہو گئی")} else message=error
+    }
+  }){Text(text("Save","محفوظ کریں"))}},dismissButton={TextButton(onClick={showPartyAdd=false}){Text(text("Cancel","منسوخ"))}})
+'''
+  if us.count(anchor)!=1: raise SystemExit("Party Master dialogs insertion anchor missing")
+  us=us.replace(anchor,dialogs+anchor,1)
+  uip.write_text(us,encoding="utf-8")
+print("Added separate searchable Party Master with add/edit and ledger navigation.")
