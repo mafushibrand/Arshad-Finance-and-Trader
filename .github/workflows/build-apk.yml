@@ -408,6 +408,7 @@ jobs:
           python3 "$GITHUB_WORKSPACE/scripts/apply-roznamcha-redesign-4910.py" "$PROJECT_DIR"
           python3 "$GITHUB_WORKSPACE/scripts/fix-roznamcha-archive-open-callback.py" "$PROJECT_DIR"
           python3 "$GITHUB_WORKSPACE/scripts/apply-roznamcha-ui-4911.py" "$PROJECT_DIR"
+          python3 "$GITHUB_WORKSPACE/scripts/fix-roznamcha-card-click-4911.py" "$PROJECT_DIR"
 
       - name: Set update-compatible release version 4.9.11
         shell: bash
