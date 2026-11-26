@@ -479,10 +479,10 @@ jobs:
             --ks-pass pass:android --key-pass pass:android \
             --ks-key-alias androiddebugkey \
             --v1-signing-enabled true --v2-signing-enabled true \
-            --out "$PROJECT_DIR/dist/ArshadFinance-4.9.5.apk" "$APK"
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.9.5.apk" > "$PROJECT_DIR/dist/signature-check.txt"
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.9.5.apk" > "$PROJECT_DIR/dist/package-info.txt"
-          (cd "$PROJECT_DIR/dist" && sha256sum "ArshadFinance-4.9.5.apk" > "SHA256SUMS.txt")
+            --out "$PROJECT_DIR/dist/ArshadFinance-4.9.6.apk" "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$PROJECT_DIR/dist/ArshadFinance-4.9.6.apk" > "$PROJECT_DIR/dist/signature-check.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PROJECT_DIR/dist/ArshadFinance-4.9.6.apk" > "$PROJECT_DIR/dist/package-info.txt"
+          (cd "$PROJECT_DIR/dist" && sha256sum "ArshadFinance-4.9.6.apk" > "SHA256SUMS.txt")
           cat "$PROJECT_DIR/dist/signature-check.txt"
           head -n 3 "$PROJECT_DIR/dist/package-info.txt"
 
