@@ -403,7 +403,7 @@ if "var showPartyManager" not in us:
   var partyAddressInput by remember { mutableStateOf("") }'''
   if us.count(anchor)!=1: raise SystemExit("Party Master manager state anchor missing")
   us=us.replace(anchor,add,1)
-  old='''    footer={ if(writable && section !in listOf("MOVEMENTS","AUDIT","UNITS","DEMO")) PremiumButton(if(section=="PRODUCTION") text("Record production","پیداوار درج کریں") else if(section=="ROZNAMCHA") text("Add cash entry","نیا نقد اندراج"),{form=true}) }) {'''
+  old='''    footer={ if(writable && section !in listOf("MOVEMENTS","AUDIT","UNITS","DEMO")) PremiumButton(if(section=="PRODUCTION") text("Record production","پیداوار درج کریں") else if(section=="ROZNAMCHA") text("Add cash entry","نیا نقد اندراج") else text("Add ${sections[section]}","نیا ریکارڈ شامل کریں"),{form=true}) }) {'''
   new='''    footer={
       if(writable && section=="ROZNAMCHA") Column(Modifier.fillMaxWidth().padding(horizontal=16.dp,vertical=8.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
         OutlinedButton(onClick={showPartyManager=true;partyManagerQuery=""},modifier=Modifier.fillMaxWidth().heightIn(min=50.dp)) { Icon(Icons.Default.People,null);Text(text("Manage Party Master","پارٹیوں کی فہرست")) }
