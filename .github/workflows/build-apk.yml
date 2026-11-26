@@ -417,6 +417,12 @@ jobs:
           base64 -d "$GITHUB_WORKSPACE/patches/app-theme-polish-4912.patch.gz.b64" | gzip -dc > "$RUNNER_TEMP/app-theme-polish-4912.patch"
           patch --batch --forward -p1 -d "$PROJECT_DIR" < "$RUNNER_TEMP/app-theme-polish-4912.patch"
 
+      - name: Finalize exact Pakistan entry time and login theme contrast
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 "$GITHUB_WORKSPACE/scripts/apply-theme-polish-followup-4912.py" "$PROJECT_DIR"
+
       - name: Set update-compatible release version 4.9.12
         shell: bash
         run: |
